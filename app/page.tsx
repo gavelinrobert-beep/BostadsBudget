@@ -270,7 +270,7 @@ export default function Home() {
               {/* LTV percentage */}
               <div className="bg-purple-600 text-white rounded-lg shadow-lg p-6">
                 <h3 className="text-lg font-medium mb-2">Belåningsgrad</h3>
-                <p className="text-3xl font-bold">{formatPercent(resultat.belåningsgrad)}&nbsp;%</p>
+                <p className="text-3xl font-bold">{formatPercent(resultat.belåningsgrad)}{'\u00A0'}%</p>
               </div>
             </div>
 
@@ -303,7 +303,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between items-center border-b pb-2">
                   <span className="text-gray-700 font-medium">Amorteringskrav</span>
-                  <span className="text-gray-900 font-semibold">{formatPercent(resultat.amorteringsprocent)}&nbsp;%</span>
+                  <span className="text-gray-900 font-semibold">{formatPercent(resultat.amorteringsprocent)}{'\u00A0'}%</span>
                 </div>
                 <div className="flex justify-between items-center border-b pb-2">
                   <span className="text-gray-700 font-medium">Ränta per år</span>
