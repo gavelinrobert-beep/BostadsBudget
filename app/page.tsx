@@ -3,19 +3,22 @@
 import { useState, FormEvent } from 'react';
 import { beraknaBostadskostnad, BostadsInput, BostadsResultat } from '@/lib/calculators';
 
+// Default values for the calculator
+const DEFAULT_INPUT: BostadsInput = {
+  bostadspris: 3000000,
+  kontantinsats: 450000,
+  arsinkomst: 500000,
+  arsranta: 0.045,
+  driftkostnad: 3000,
+  elkostnad: 800,
+  renoveringskostnad: 200000,
+  renoveringsintervall: 10,
+  analysperiod: 10,
+};
+
 export default function Home() {
   // Input state with default values
-  const [input, setInput] = useState<BostadsInput>({
-    bostadspris: 3000000,
-    kontantinsats: 450000,
-    arsinkomst: 500000,
-    arsranta: 0.045,
-    driftkostnad: 3000,
-    elkostnad: 800,
-    renoveringskostnad: 200000,
-    renoveringsintervall: 10,
-    analysperiod: 10,
-  });
+  const [input, setInput] = useState<BostadsInput>(DEFAULT_INPUT);
 
   const [resultat, setResultat] = useState<BostadsResultat | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,17 +63,7 @@ export default function Home() {
 
   // Handle reset
   const handleAterstall = () => {
-    setInput({
-      bostadspris: 3000000,
-      kontantinsats: 450000,
-      arsinkomst: 500000,
-      arsranta: 0.045,
-      driftkostnad: 3000,
-      elkostnad: 800,
-      renoveringskostnad: 200000,
-      renoveringsintervall: 10,
-      analysperiod: 10,
-    });
+    setInput(DEFAULT_INPUT);
     setResultat(null);
     setError(null);
   };
