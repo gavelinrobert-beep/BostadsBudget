@@ -37,11 +37,13 @@ The existing `public/icon.svg` shows a simple blue house icon. You can:
 
 **Required Files for `/public/`:**
 
-1. **favicon.ico** - 32x32, legacy favicon
-2. **icon.svg** - Vector icon (modern browsers)
-3. **apple-touch-icon.png** - 180x180, iOS home screen
-4. **opengraph-image.png** - 1200x630, social media previews
-5. **manifest.json** - Already created, update icon paths if needed
+1. **icon.svg** - Vector icon (modern browsers) ✓ Already created as placeholder
+2. **apple-touch-icon.png** - 180x180, iOS home screen
+3. **opengraph-image.png** - 1200x630, social media previews
+4. **manifest.json** - Already created, update icon paths if needed
+5. **favicon.ico** - 32x32 (optional, for legacy browser support)
+
+**Note**: Modern browsers support SVG favicons, so favicon.ico is optional but can be added for older browser compatibility.
 
 **Automated Generation:**
 
@@ -62,8 +64,10 @@ Use https://realfavicongenerator.net/ (recommended):
 
 # From 1024x1024 master icon:
 convert icon-1024.png -resize 180x180 public/apple-touch-icon.png
-convert icon-1024.png -resize 32x32 public/favicon.ico
 cp icon-1024.svg public/icon.svg  # if you have SVG version
+
+# Optional: Create ICO for legacy browsers
+convert icon-1024.png -resize 32x32 public/favicon.ico
 
 # For Open Graph image (1200x630), add your icon to a background
 convert -size 1200x630 xc:#3B82F6 \

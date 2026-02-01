@@ -73,14 +73,16 @@ The current icons are SVG placeholders. To create production-ready icons:
 1. Create a 1024x1024 icon design
 2. Generate the following files:
    - `public/icon.svg` - Vector icon (already has placeholder)
-   - `public/favicon.ico` - 32x32 favicon
    - `public/apple-touch-icon.png` - 180x180 for iOS
    - `public/opengraph-image.png` - 1200x630 for Open Graph
+   - Optional: `public/favicon.ico` - 32x32 ICO format for legacy browsers
    
 3. Recommended tools:
    - Figma or Adobe Illustrator for design
    - https://realfavicongenerator.net/ for generating all sizes
    - https://www.favicon.cc/ for simple favicon creation
+
+**Note**: Modern browsers support SVG favicons, so favicon.ico is now optional.
 
 ## SEO Optimization Checklist
 
