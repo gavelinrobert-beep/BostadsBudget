@@ -111,21 +111,18 @@ export default function Index() {
     // Light haptic feedback on button press
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Simulate calculation delay
-    setTimeout(async () => {
-      try {
-        const result = beraknaBostadskostnad(input);
-        setResultat(result);
-        // Save calculation automatically
-        await saveCalculation(input, result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
-        setResultat(null);
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 500);
+    try {
+      const result = beraknaBostadskostnad(input);
+      setResultat(result);
+      // Save calculation automatically
+      await saveCalculation(input, result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
+      setResultat(null);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle reset
