@@ -142,7 +142,7 @@ export default function Home() {
                 type="number"
                 id="arsranta"
                 step="0.1"
-                value={formatPercent(input.arsranta)}
+                value={(input.arsranta * 100).toString()}
                 onChange={(e) => setInput({ ...input, arsranta: Number(e.target.value) / 100 })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 inputMode="decimal"
