@@ -35,8 +35,23 @@ export interface BostadsResultat {
  * 
  * @param input - BostadsInput objekt med alla nödvändiga parametrar
  * @returns BostadsResultat objekt med beräknade värden
+ * @throws Error om input parametrar är ogiltiga
  */
 export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
+  // Validera input
+  if (input.bostadspris <= 0) {
+    throw new Error('Bostadspris måste vara större än 0');
+  }
+  if (input.kontantinsats > input.bostadspris) {
+    throw new Error('Kontantinsats kan inte vara större än bostadspris');
+  }
+  if (input.kontantinsats < 0) {
+    throw new Error('Kontantinsats kan inte vara negativ');
+  }
+  if (input.renoveringsintervall <= 0) {
+    throw new Error('Renoveringsintervall måste vara större än 0');
+  }
+
   // 1. Lånebelopp = bostadspris - kontantinsats
   const lanebelopp = input.bostadspris - input.kontantinsats;
 
@@ -80,6 +95,7 @@ export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
   const totalPerAr = totalPerManad * 12;
 
   // 12. Genomsnitt per månad = total per månad (enkel modell för MVP)
+  // TODO: I framtiden kan detta beräknas baserat på analysperioden för mer avancerad kostnadsprognos
   const genomsnittPerManad = totalPerManad;
 
   return {
