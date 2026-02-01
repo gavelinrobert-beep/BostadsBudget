@@ -9,8 +9,12 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "~52.0.0",
+    "expo-file-system": "^19.0.21",
+    "expo-haptics": "^15.0.8",
     "expo-router": "~4.0.0",
+    "expo-sharing": "^14.0.8",
     "react": "18.3.1",
     "react-native": "0.76.3",
     "react-native-paper": "^5.12.5",

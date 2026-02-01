@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  useColorScheme,
+  ActivityIndicator,
 } from 'react-native';
-import { TextInput, Button, Card, Text, useTheme } from 'react-native-paper';
+import { TextInput, Button, Card, Text, useTheme, IconButton } from 'react-native-paper';
 import { beraknaBostadskostnad, BostadsInput, BostadsResultat } from '../../lib/calculators';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sharing from 'expo-sharing';
+import * as Haptics from 'expo-haptics';
+import * as FileSystem from 'expo-file-system';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -22,13 +28,53 @@ const DEFAULT_INPUT: BostadsInput = {
   analysperiod: 10,
 };
 
+const STORAGE_KEY = '@bostadsbudget_calculation';
+
 export default function Index() {
   const theme = useTheme();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   
   // Input state with default values
   const [input, setInput] = useState<BostadsInput>(DEFAULT_INPUT);
   const [resultat, setResultat] = useState<BostadsResultat | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Load saved calculation on mount
+  useEffect(() => {
+    loadSavedCalculation();
+  }, []);
+
+  // Load calculation from AsyncStorage
+  const loadSavedCalculation = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.input) {
+          setInput(parsed.input);
+        }
+        if (parsed.resultat) {
+          setResultat(parsed.resultat);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading saved calculation:', err);
+    }
+  };
+
+  // Save calculation to AsyncStorage
+  const saveCalculation = async (inputData: BostadsInput, resultatData: BostadsResultat) => {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ input: inputData, resultat: resultatData })
+      );
+    } catch (err) {
+      console.error('Error saving calculation:', err);
+    }
+  };
 
   // Validation
   const validateInput = (): string | null => {
@@ -48,23 +94,38 @@ export default function Index() {
   };
 
   // Handle calculation
-  const handleBerakna = () => {
+  const handleBerakna = async () => {
     setError(null);
+    setIsLoading(true);
     
     const validationError = validateInput();
     if (validationError) {
       setError(validationError);
       setResultat(null);
+      setIsLoading(false);
+      // Error haptic feedback
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
 
-    try {
-      const result = beraknaBostadskostnad(input);
-      setResultat(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
-      setResultat(null);
-    }
+    // Light haptic feedback on button press
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Simulate calculation delay
+    setTimeout(async () => {
+      try {
+        const result = beraknaBostadskostnad(input);
+        setResultat(result);
+        // Save calculation automatically
+        await saveCalculation(input, result);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
+        setResultat(null);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 500);
   };
 
   // Handle reset
@@ -72,6 +133,67 @@ export default function Index() {
     setInput(DEFAULT_INPUT);
     setResultat(null);
     setError(null);
+  };
+
+  // Share results
+  const handleShare = async () => {
+    if (!resultat) return;
+    
+    try {
+      // Format results as text
+      const shareText = `
+Bostadsbudget Resultat
+====================
+
+📊 Sammanfattning:
+• Total månadskostnad: ${formatNumber(resultat.totalPerManad)} kr
+• Total årskostnad: ${formatNumber(resultat.totalPerAr)} kr
+• Belåningsgrad: ${formatPercent(resultat.belåningsgrad)}%
+
+💰 Månadskostnader:
+• Lån (ränta + amortering): ${formatNumber(resultat.lanePerManad)} kr
+• Drift + El: ${formatNumber(resultat.driftOchElPerManad)} kr
+• Renovering (snitt): ${formatNumber(resultat.renoveringPerManad)} kr
+
+🏠 Låneuppgifter:
+• Lånebelopp: ${formatNumber(resultat.lanebelopp)} kr
+• Amorteringskrav: ${formatPercent(resultat.amorteringsprocent)}%
+• Ränta per år: ${formatNumber(resultat.rantaPerAr)} kr
+• Amortering per år: ${formatNumber(resultat.amorteringPerAr)} kr
+
+📝 Beräknat med BostadsBudget
+      `.trim();
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        // Create a temporary text file to share
+        const fileName = 'bostadsbudget_resultat.txt';
+        const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+        await FileSystem.writeAsStringAsync(fileUri, shareText);
+        await Sharing.shareAsync(fileUri);
+      } else {
+        setError('Delning är inte tillgänglig på denna enhet');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+      setError('Kunde inte dela resultatet');
+    }
+  };
+
+  // Format thousands separator
+  const formatInputValue = (value: string): string => {
+    // Remove all non-numeric characters except decimal point
+    const cleaned = value.replace(/[^\d.]/g, '');
+    const number = parseFloat(cleaned);
+    if (isNaN(number)) return '';
+    return number.toLocaleString('sv-SE');
+  };
+
+  // Parse formatted input back to number
+  const parseInputValue = (value: string): number => {
+    const cleaned = value.replace(/\s/g, '').replace(/,/g, '.');
+    const number = parseFloat(cleaned);
+    return isNaN(number) ? 0 : number;
   };
 
   // Format number with Swedish thousand separator
@@ -87,56 +209,80 @@ export default function Index() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, isDark && styles.containerDark]}
     >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
       >
         {/* Form Card */}
-        <Card style={styles.formCard}>
+        <Card style={[styles.formCard, isDark && styles.cardDark]}>
           <Card.Content>
-            <Text variant="headlineSmall" style={styles.sectionTitle}>
+            <Text variant="headlineSmall" style={[styles.sectionTitle, isDark && styles.textDark]}>
               Fyll i uppgifter
             </Text>
 
             {/* Bostadspris */}
             <TextInput
               label="Bostadspris (kr)"
-              value={input.bostadspris.toString()}
+              value={formatInputValue(input.bostadspris.toString())}
               onChangeText={(text) =>
-                setInput({ ...input, bostadspris: Number(text) || 0 })
+                setInput({ ...input, bostadspris: parseInputValue(text) })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.bostadspris !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, bostadspris: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Kontantinsats */}
             <TextInput
               label="Kontantinsats (kr)"
-              value={input.kontantinsats.toString()}
+              value={formatInputValue(input.kontantinsats.toString())}
               onChangeText={(text) =>
-                setInput({ ...input, kontantinsats: Number(text) || 0 })
+                setInput({ ...input, kontantinsats: parseInputValue(text) })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.kontantinsats !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, kontantinsats: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Årsinkomst */}
             <TextInput
               label="Årsinkomst (kr) - valfritt"
-              value={input.arsinkomst?.toString() || ''}
+              value={input.arsinkomst ? formatInputValue(input.arsinkomst.toString()) : ''}
               onChangeText={(text) =>
                 setInput({
                   ...input,
-                  arsinkomst: text ? Number(text) : undefined,
+                  arsinkomst: text ? parseInputValue(text) : undefined,
                 })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.arsinkomst ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, arsinkomst: undefined })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Årsränta */}
@@ -148,43 +294,75 @@ export default function Index() {
               }
               keyboardType="decimal-pad"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.arsranta !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, arsranta: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Driftkostnad */}
             <TextInput
               label="Driftkostnad (kr/mån)"
-              value={input.driftkostnad.toString()}
+              value={formatInputValue(input.driftkostnad.toString())}
               onChangeText={(text) =>
-                setInput({ ...input, driftkostnad: Number(text) || 0 })
+                setInput({ ...input, driftkostnad: parseInputValue(text) })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.driftkostnad !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, driftkostnad: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Elkostnad */}
             <TextInput
               label="Elkostnad (kr/mån)"
-              value={input.elkostnad.toString()}
+              value={formatInputValue(input.elkostnad.toString())}
               onChangeText={(text) =>
-                setInput({ ...input, elkostnad: Number(text) || 0 })
+                setInput({ ...input, elkostnad: parseInputValue(text) })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.elkostnad !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, elkostnad: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Renoveringskostnad */}
             <TextInput
               label="Renoveringskostnad (kr)"
-              value={input.renoveringskostnad.toString()}
+              value={formatInputValue(input.renoveringskostnad.toString())}
               onChangeText={(text) =>
-                setInput({ ...input, renoveringskostnad: Number(text) || 0 })
+                setInput({ ...input, renoveringskostnad: parseInputValue(text) })
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.renoveringskostnad !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, renoveringskostnad: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Renoveringsintervall */}
@@ -196,7 +374,15 @@ export default function Index() {
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.renoveringsintervall !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, renoveringsintervall: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Analysperiod */}
@@ -208,7 +394,15 @@ export default function Index() {
               }
               keyboardType="numeric"
               mode="outlined"
-              style={styles.input}
+              style={[styles.input, isDark && styles.inputDark]}
+              right={
+                input.analysperiod !== 0 ? (
+                  <TextInput.Icon
+                    icon="close-circle"
+                    onPress={() => setInput({ ...input, analysperiod: 0 })}
+                  />
+                ) : undefined
+              }
             />
 
             {/* Error message */}
@@ -220,6 +414,16 @@ export default function Index() {
               </Card>
             )}
 
+            {/* Loading indicator */}
+            {isLoading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2563eb" />
+                <Text style={[styles.loadingText, isDark && styles.textDark]}>
+                  Beräknar...
+                </Text>
+              </View>
+            )}
+
             {/* Buttons */}
             <View style={styles.buttonContainer}>
               <Button
@@ -227,6 +431,7 @@ export default function Index() {
                 onPress={handleBerakna}
                 style={[styles.button, { backgroundColor: '#2563eb' }]}
                 labelStyle={styles.buttonLabel}
+                disabled={isLoading}
               >
                 Beräkna
               </Button>
@@ -235,6 +440,7 @@ export default function Index() {
                 onPress={handleAterstall}
                 style={[styles.button, { backgroundColor: '#6b7280' }]}
                 labelStyle={styles.buttonLabel}
+                disabled={isLoading}
               >
                 Återställ
               </Button>
@@ -245,6 +451,17 @@ export default function Index() {
         {/* Results */}
         {resultat && (
           <View style={styles.resultsContainer}>
+            {/* Share button */}
+            <Button
+              mode="contained"
+              onPress={handleShare}
+              style={[styles.button, styles.shareButton, { backgroundColor: '#16a34a' }]}
+              labelStyle={styles.buttonLabel}
+              icon="share-variant"
+            >
+              Dela resultat
+            </Button>
+
             {/* Three main result cards */}
             <Card style={[styles.resultCard, { backgroundColor: '#2563eb' }]}>
               <Card.Content>
@@ -280,28 +497,28 @@ export default function Index() {
             </Card>
 
             {/* Monthly breakdown */}
-            <Card style={styles.detailCard}>
+            <Card style={[styles.detailCard, isDark && styles.cardDark]}>
               <Card.Content>
-                <Text variant="titleLarge" style={styles.detailTitle}>
+                <Text variant="titleLarge" style={[styles.detailTitle, isDark && styles.textDark]}>
                   Uppdelning per månad
                 </Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>
                     Lån (ränta + amortering)
                   </Text>
-                  <Text style={styles.detailValue}>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.lanePerManad)} kr
                   </Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Drift + El</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Drift + El</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.driftOchElPerManad)} kr
                   </Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Renovering (snitt)</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Renovering (snitt)</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.renoveringPerManad)} kr
                   </Text>
                 </View>
@@ -309,32 +526,32 @@ export default function Index() {
             </Card>
 
             {/* Loan details */}
-            <Card style={styles.detailCard}>
+            <Card style={[styles.detailCard, isDark && styles.cardDark]}>
               <Card.Content>
-                <Text variant="titleLarge" style={styles.detailTitle}>
+                <Text variant="titleLarge" style={[styles.detailTitle, isDark && styles.textDark]}>
                   Låneuppgifter
                 </Text>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Lånebelopp</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Lånebelopp</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.lanebelopp)} kr
                   </Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Amorteringskrav</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Amorteringskrav</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatPercent(resultat.amorteringsprocent)}{'\u00A0'}%
                   </Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Ränta per år</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Ränta per år</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.rantaPerAr)} kr
                   </Text>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Amortering per år</Text>
-                  <Text style={styles.detailValue}>
+                <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
+                  <Text style={[styles.detailLabel, isDark && styles.textDark]}>Amortering per år</Text>
+                  <Text style={[styles.detailValue, isDark && styles.textDark]}>
                     {formatNumber(resultat.amorteringPerAr)} kr
                   </Text>
                 </View>
@@ -352,6 +569,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f4f8',
   },
+  containerDark: {
+    backgroundColor: '#111827',
+  },
   scrollView: {
     flex: 1,
   },
@@ -363,14 +583,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#ffffff',
   },
+  cardDark: {
+    backgroundColor: '#1f2937',
+  },
   sectionTitle: {
     marginBottom: 16,
     fontWeight: 'bold',
     color: '#1f2937',
   },
+  textDark: {
+    color: '#f9fafb',
+  },
   input: {
     marginBottom: 12,
     backgroundColor: '#ffffff',
+  },
+  inputDark: {
+    backgroundColor: '#374151',
   },
   errorCard: {
     marginTop: 8,
@@ -379,6 +608,15 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#991b1b',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#6b7280',
   },
   buttonContainer: {
     marginTop: 8,
@@ -390,6 +628,9 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  shareButton: {
+    marginBottom: 16,
   },
   resultsContainer: {
     gap: 16,
@@ -420,6 +661,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+  },
+  detailRowDark: {
+    borderBottomColor: '#4b5563',
   },
   detailLabel: {
     fontSize: 15,
