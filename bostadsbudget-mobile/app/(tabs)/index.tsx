@@ -166,11 +166,10 @@ Bostadsbudget Resultat
 
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
-        // Create a temporary text file to share
-        const fileName = 'bostadsbudget_resultat.txt';
-        const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-        await FileSystem.writeAsStringAsync(fileUri, shareText);
-        await Sharing.shareAsync(fileUri);
+        // Create a temporary text file to share using new API
+        const file = new FileSystem.File(FileSystem.Paths.cache, 'bostadsbudget_resultat.txt');
+        await file.write(shareText);
+        await Sharing.shareAsync(file.uri);
       } else {
         setError('Delning är inte tillgänglig på denna enhet');
       }
