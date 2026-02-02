@@ -11,6 +11,7 @@ export interface BostadsInput {
   renoveringskostnad: number; // kr
   renoveringsintervall: number; // år
   analysperiod: number; // år
+  bostadsyta?: number; // kvm (optional)
 }
 
 /**
@@ -297,10 +298,18 @@ export function beraknaKontantinsatsAlternativ(
  * @param bostadspris - Bostadspris
  * @returns Uppskattad hyra baserat på schablon 150 kr/kvm (baserat på antagandet att 75 kvm kostar 3 Mkr)
  */
-export function beraknaHyresJamforelse(bostadspris: number): number {
+export function beraknaHyresJamforelse(bostadspris: number, bostadsyta?: number): number {
   // Antag ca 150 kr/kvm per månad som schablon för genomsnittlig hyra
-  // Uppskatta storlek baserat på pris: ungefär 75 kvm för 3 Mkr
-  const uppskattadStorlek = (bostadspris / 3000000) * 75;
-  const hyraPerManad = uppskattadStorlek * 150;
+  let storlek: number;
+  
+  if (bostadsyta && bostadsyta > 0) {
+    // Använd angiven bostadsyta
+    storlek = bostadsyta;
+  } else {
+    // Uppskatta storlek baserat på pris: ungefär 75 kvm för 3 Mkr
+    storlek = (bostadspris / 3000000) * 75;
+  }
+  
+  const hyraPerManad = storlek * 150;
   return hyraPerManad;
 }

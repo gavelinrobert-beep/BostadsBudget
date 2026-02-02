@@ -25,6 +25,7 @@ const DEFAULT_INPUT: BostadsInput = {
   renoveringskostnad: 200000,
   renoveringsintervall: 10,
   analysperiod: 10,
+  bostadsyta: 75,
 };
 
 export default function Home() {
@@ -81,7 +82,7 @@ export default function Home() {
       const downPaymentOptions = beraknaKontantinsatsAlternativ(input);
       setKontantinsatsAlternativ(downPaymentOptions);
       
-      const rental = beraknaHyresJamforelse(input.bostadspris);
+      const rental = beraknaHyresJamforelse(input.bostadspris, input.bostadsyta);
       setHyresJamforelse(rental);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
@@ -250,6 +251,21 @@ export default function Home() {
                   inputMode="decimal"
                 />
               </div>
+
+              {/* Bostadsyta */}
+              <div>
+                <label htmlFor="bostadsyta" className="block text-sm font-medium text-gray-700 mb-2">
+                  Bostadsyta (kvm) <span className="text-gray-500 text-xs">(valfritt)</span> <span className="text-gray-400 text-xs cursor-help" title="Ange bostadens storlek för att jämföra med hyresmarknad">ⓘ</span>
+                </label>
+                <input
+                  type="number"
+                  id="bostadsyta"
+                  value={input.bostadsyta || ''}
+                  onChange={(e) => setInput({ ...input, bostadsyta: e.target.value ? Number(e.target.value) : undefined })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  inputMode="numeric"
+                />
+              </div>
             </div>
           </div>
 
@@ -399,6 +415,30 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {/* Rental comparison info-box */}
+            {hyresJamforelse && input.bostadsyta && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow p-6">
+                <div className="flex items-start">
+                  <span className="text-2xl mr-3">💡</span>
+                  <div className="flex-1">
+                    <p className="text-gray-700 mb-3">
+                      För en hyresrätt på <span className="font-semibold">{input.bostadsyta} kvm</span> skulle du betala cirka <span className="font-bold text-gray-900">{formatNumber(hyresJamforelse)} kr/mån</span>
+                    </p>
+                    {resultat.totalPerManad < hyresJamforelse ? (
+                      <p className="text-green-700 font-medium">
+                        ✓ Du sparar ~{formatNumber(hyresJamforelse - resultat.totalPerManad)} kr/mån jämfört med hyra
+                      </p>
+                    ) : (
+                      <p className="text-orange-600 font-medium">
+                        Din boendekostnad är ~{formatNumber(resultat.totalPerManad - hyresJamforelse)} kr/mån högre än hyra, men du bygger eget kapital
+                      </p>
+                    )}
+                    <p className="text-gray-500 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Monthly breakdown */}
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -591,20 +631,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
-            {/* Rental comparison */}
-            {hyresJamforelse && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Jämförelse med hyresrätt</h2>
-                <p className="text-gray-700">
-                  Din boendekostnad är <span className="font-bold text-blue-600">{formatNumber(resultat.totalPerManad)} kr/mån</span>. 
-                  För en hyresrätt av motsvarande storlek: ~<span className="font-bold">{formatNumber(hyresJamforelse)} kr/mån</span>.
-                </p>
-                <p className="text-gray-600 text-sm mt-2">
-                  (Baserat på schablonen 150 kr/kvm)
-                </p>
-              </div>
-            )}
 
             {/* Down payment optimization */}
             {kontantinsatsAlternativ && (
