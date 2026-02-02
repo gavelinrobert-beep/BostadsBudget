@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import {
   BostadsInput,
   BostadsResultat,
@@ -397,6 +396,6 @@ export const generatePDF = async (
   }
   
   // Save the PDF
-  const datum = new Date().toISOString().split('T')[0];
-  doc.save(`bostadsbudget_${datum}.pdf`);
+  const dateString = new Date().toISOString().split('T')[0];
+  doc.save(`bostadsbudget_${dateString}.pdf`);
 };
