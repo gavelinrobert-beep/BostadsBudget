@@ -322,17 +322,17 @@ export default function Home() {
             <div className="absolute top-20 left-10 opacity-10 animate-float">
               <Building className="w-16 h-16 md:w-24 md:h-24" />
             </div>
-            <div className="absolute top-40 right-20 opacity-10 animate-float" style={{ animationDelay: '1s' }}>
+            <div className="absolute top-40 right-20 opacity-10 animate-float-delay-1">
               <HomeIcon className="w-20 h-20 md:w-32 md:h-32" />
             </div>
-            <div className="absolute bottom-20 left-1/4 opacity-10 animate-float" style={{ animationDelay: '2s' }}>
+            <div className="absolute bottom-20 left-1/4 opacity-10 animate-float-delay-2">
               <Building className="w-12 h-12 md:w-20 md:h-20" />
             </div>
           </div>
 
           <div className="relative max-w-5xl mx-auto text-center space-y-8">
             {/* Main heading */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight text-shadow-lg">
               Din bostad. Din ekonomi. Din framtid.
             </h1>
             
