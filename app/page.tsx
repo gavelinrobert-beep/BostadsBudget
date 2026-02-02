@@ -409,7 +409,7 @@ export default function Home() {
         <form onSubmit={handleBerakna} className="space-y-8 mb-8">
           {/* Section: Bostad & Lån */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800">
+            <div className="mb-8 pb-6 border-b-2 border-blue-200 dark:border-blue-800">
               <div className="flex items-center mb-3">
                 <HomeIcon className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -506,7 +506,7 @@ export default function Home() {
 
           {/* Section: Driftkostnader */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-green-200 via-emerald-200 to-teal-200 dark:from-green-800 dark:via-emerald-800 dark:to-teal-800">
+            <div className="mb-8 pb-6 border-b-2 border-green-200 dark:border-green-800">
               <div className="flex items-center mb-3">
                 <Coins className="w-8 h-8 mr-3 text-green-600 dark:text-green-400" />
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -554,7 +554,7 @@ export default function Home() {
 
           {/* Section: Renovering & Planering */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-orange-200 via-amber-200 to-yellow-200 dark:from-orange-800 dark:via-amber-800 dark:to-yellow-800">
+            <div className="mb-8 pb-6 border-b-2 border-orange-200 dark:border-orange-800">
               <div className="flex items-center mb-3">
                 <Hammer className="w-8 h-8 mr-3 text-orange-600 dark:text-orange-400" />
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
