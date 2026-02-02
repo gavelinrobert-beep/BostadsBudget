@@ -263,9 +263,9 @@ export default function Home() {
   // Get color for loan-to-value ratio
   const getBelåningsgradColor = (ltv: number): string => {
     if (ltv < 0.5) return 'bg-green-600 dark:bg-green-700'; // < 50%
-    if (ltv < 0.7) return 'bg-yellow-500'; // 50-70%
-    if (ltv < 0.85) return 'bg-orange-500'; // 70-85%
-    return 'bg-red-600'; // > 85%
+    if (ltv < 0.7) return 'bg-yellow-500 dark:bg-yellow-600'; // 50-70%
+    if (ltv < 0.85) return 'bg-orange-500 dark:bg-orange-600'; // 70-85%
+    return 'bg-red-600 dark:bg-red-700'; // > 85%
   };
 
   const getBelåningsgradTextColor = (ltv: number): string => {
@@ -812,7 +812,7 @@ export default function Home() {
                         {formatNumber(kanslighetsAnalys.elFordubblas)} kr
                       </div>
                       <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-gray-600">
-                        <div className="flex items-center text-yellow-700">
+                        <div className="flex items-center text-yellow-700 dark:text-gray-100">
                           <span className="text-xl mr-1">↑</span>
                           <span className="font-semibold">
                             +{formatNumber(calculateDifference(kanslighetsAnalys.elFordubblas, resultat.totalPerManad))} kr/mån
@@ -956,7 +956,7 @@ export default function Home() {
                         return (
                           <tr 
                             key={alt.kontantinsatsProcent} 
-                            className={`border-b border-gray-200 dark:border-gray-700 ${isCurrent ? 'bg-blue-100 font-semibold' : ''}`}
+                            className={`border-b border-gray-200 dark:border-gray-700 ${isCurrent ? 'bg-blue-100 dark:bg-blue-900/20 font-semibold' : ''}`}
                           >
                             <td className="py-2 px-2">
                               {alt.kontantinsatsProcent}% ({formatNumber(alt.kontantinsatsBelopp)} kr)
