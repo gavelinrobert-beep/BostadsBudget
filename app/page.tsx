@@ -38,6 +38,7 @@ export default function Home() {
   const [kontantinsatsAlternativ, setKontantinsatsAlternativ] = useState<KontantinsatsAlternativ[] | null>(null);
   const [hyresJamforelse, setHyresJamforelse] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
 
   // Validation
   const validateInput = (): string | null => {
@@ -590,35 +591,85 @@ export default function Home() {
                   <span className="text-gray-900 font-semibold">{formatPercent(resultat.amorteringsprocent)}{'\u00A0'}%</span>
                 </div>
                 
-                {/* Enhanced amortization explanation */}
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-sm">
-                  <p className="text-gray-800 font-semibold mb-3">
-                    Ditt amorteringskrav är {formatPercent(resultat.amorteringsprocent)}% per år eftersom:
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <span className="text-green-600 mr-2">✓</span>
-                      <span className="text-gray-700">
-                        Belåningsgrad {formatPercent(resultat.belåningsgrad)}% 
-                        {resultat.belåningsgrad > 0.7 ? ' (över 70%)' : resultat.belåningsgrad > 0.5 ? ' (över 50%)' : ' (under 50%)'} 
-                        {' → '}{formatPercent(resultat.amorteringsprocentGrundkrav)}%
-                      </span>
-                    </li>
-                    {resultat.harSkarptKrav && (
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span className="text-gray-700">
-                          Lån {formatNumber(resultat.lanebelopp)} kr {'>'} {SKARPT_KRAV_MULTIPLIKATOR} × årsinkomst {input.arsinkomst ? formatNumber(input.arsinkomst) : ''} kr ({input.arsinkomst ? formatNumber(SKARPT_KRAV_MULTIPLIKATOR * input.arsinkomst) : ''} kr)
-                          {' → '} +{formatPercent(resultat.amorteringsprocentSkarptKrav)}% (skärpt krav)
-                        </span>
-                      </li>
-                    )}
-                    <li className="border-t pt-2 mt-2">
-                      <span className="text-gray-800 font-semibold">
-                        = Totalt: {formatPercent(resultat.amorteringsprocent)}% per år
-                      </span>
-                    </li>
-                  </ul>
+                {/* Enhanced amortization explanation with accordion */}
+                <div className="mt-2">
+                  <button
+                    onClick={() => setShowAmortizationBreakdown(!showAmortizationBreakdown)}
+                    className="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                  >
+                    <span className="mr-2">
+                      {showAmortizationBreakdown ? '▼' : '▶'}
+                    </span>
+                    Hur beräknas detta?
+                  </button>
+                  
+                  {showAmortizationBreakdown && (
+                    <div className="mt-3 bg-gray-50 border border-gray-200 rounded-md p-4 text-sm">
+                      <p className="text-gray-800 font-semibold mb-3">
+                        Visa breakdown med checkmarks:
+                      </p>
+                      <ul className="space-y-2 mb-4">
+                        {resultat.belåningsgrad > 0.7 && (
+                          <li className="flex items-start">
+                            <span className="text-green-600 mr-2 font-bold">✓</span>
+                            <span className="text-gray-700">
+                              Belåningsgrad {formatPercent(resultat.belåningsgrad)}% (över 70%) → +{formatPercent(resultat.amorteringsprocentGrundkrav)}%
+                            </span>
+                          </li>
+                        )}
+                        {resultat.belåningsgrad <= 0.7 && resultat.belåningsgrad > 0.5 && (
+                          <li className="flex items-start">
+                            <span className="text-green-600 mr-2 font-bold">✓</span>
+                            <span className="text-gray-700">
+                              Belåningsgrad {formatPercent(resultat.belåningsgrad)}% (50-70%) → +{formatPercent(resultat.amorteringsprocentGrundkrav)}%
+                            </span>
+                          </li>
+                        )}
+                        {resultat.belåningsgrad <= 0.5 && (
+                          <li className="flex items-start">
+                            <span className="text-green-600 mr-2 font-bold">✓</span>
+                            <span className="text-gray-700">
+                              Belåningsgrad {formatPercent(resultat.belåningsgrad)}% (under 50%) → 0% (inget krav)
+                            </span>
+                          </li>
+                        )}
+                        {resultat.harSkarptKrav && (
+                          <li className="flex items-start">
+                            <span className="text-green-600 mr-2 font-bold">✓</span>
+                            <span className="text-gray-700">
+                              Lån {formatNumber(resultat.lanebelopp)} kr {'>'} {SKARPT_KRAV_MULTIPLIKATOR} × årsinkomst {input.arsinkomst ? formatNumber(input.arsinkomst) : ''} kr → +{formatPercent(resultat.amorteringsprocentSkarptKrav)}% (skärpt krav)
+                            </span>
+                          </li>
+                        )}
+                        {!resultat.harSkarptKrav && input.arsinkomst && input.arsinkomst > 0 && (
+                          <li className="flex items-start">
+                            <span className="text-blue-600 mr-2 font-bold" role="img" aria-label="Information">ℹ️</span>
+                            <span className="text-gray-700">
+                              Skärpt amorteringskrav gäller ej (lån {'<'} {SKARPT_KRAV_MULTIPLIKATOR} × årsinkomst)
+                            </span>
+                          </li>
+                        )}
+                      </ul>
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-gray-800 font-bold">
+                          Totalt amorteringskrav: {formatPercent(resultat.amorteringsprocent)}% per år
+                        </p>
+                      </div>
+                      <div className="mt-4 text-xs text-gray-600">
+                        <p>
+                          Läs mer om amorteringskrav hos{' '}
+                          <a 
+                            href="https://www.fi.se" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Finansinspektionen
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center border-b pb-2">
