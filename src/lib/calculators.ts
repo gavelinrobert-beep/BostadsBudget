@@ -34,6 +34,38 @@ export interface BostadsResultat {
 }
 
 /**
+ * Interface för känslighetsanalys
+ */
+export interface KanslighetsAnalys {
+  rantaPlus1: number; // Månadskostnad med +1% ränta
+  rantaPlus2: number; // Månadskostnad med +2% ränta
+  elFordubblas: number; // Månadskostnad med dubbel elkostnad
+}
+
+/**
+ * Interface för långsiktig prognos
+ */
+export interface LangsiktigPrognos {
+  ar: number;
+  kvarandelLan: number;
+  ackumuleradAmortering: number;
+  totalKostnad: number;
+  uppskattatVarde: number; // Antagen 2% värdestegring/år
+}
+
+/**
+ * Interface för kontantinsats-optimering
+ */
+export interface KontantinsatsAlternativ {
+  kontantinsatsProcent: number;
+  kontantinsatsBelopp: number;
+  lanebelopp: number;
+  belåningsgrad: number;
+  amorteringskrav: number;
+  manadskostnad: number;
+}
+
+/**
  * Beräknar bostadskostnad baserat på input parametrar
  * 
  * @param input - BostadsInput objekt med alla nödvändiga parametrar
@@ -122,4 +154,125 @@ export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
     totalPerAr,
     genomsnittPerManad,
   };
+}
+
+/**
+ * Beräknar känslighetsanalys för olika scenarier
+ * 
+ * @param input - BostadsInput objekt
+ * @param basResultat - Basresultat från huvudberäkningen
+ * @returns KanslighetsAnalys objekt
+ */
+export function beraknaKanslighetsAnalys(
+  input: BostadsInput,
+  basResultat: BostadsResultat
+): KanslighetsAnalys {
+  // Scenario 1: Ränta +1%
+  const resultat1 = beraknaBostadskostnad({
+    ...input,
+    arsranta: input.arsranta + 0.01,
+  });
+  
+  // Scenario 2: Ränta +2%
+  const resultat2 = beraknaBostadskostnad({
+    ...input,
+    arsranta: input.arsranta + 0.02,
+  });
+  
+  // Scenario 3: El fördubblas
+  const resultat3 = beraknaBostadskostnad({
+    ...input,
+    elkostnad: input.elkostnad * 2,
+  });
+  
+  return {
+    rantaPlus1: resultat1.totalPerManad,
+    rantaPlus2: resultat2.totalPerManad,
+    elFordubblas: resultat3.totalPerManad,
+  };
+}
+
+/**
+ * Beräknar långsiktig prognos för år 1, 5 och 10
+ * 
+ * @param input - BostadsInput objekt
+ * @param basResultat - Basresultat från huvudberäkningen
+ * @returns Array av LangsiktigPrognos objekt
+ */
+export function beraknaLangsiktigPrognos(
+  input: BostadsInput,
+  basResultat: BostadsResultat
+): LangsiktigPrognos[] {
+  const prognoser: LangsiktigPrognos[] = [];
+  const arToBerakna = [1, 5, 10];
+  
+  for (const ar of arToBerakna) {
+    // Kvarvarande lån efter amortering
+    const ackumuleradAmortering = basResultat.amorteringPerAr * ar;
+    const kvarandelLan = Math.max(0, basResultat.lanebelopp - ackumuleradAmortering);
+    
+    // Total kostnad hittills (förenklad - ej hänsyn till ränta på minskande lån)
+    const totalKostnad = basResultat.totalPerAr * ar;
+    
+    // Uppskattat värde med 2% värdestegring per år
+    const uppskattatVarde = input.bostadspris * Math.pow(1.02, ar);
+    
+    prognoser.push({
+      ar,
+      kvarandelLan,
+      ackumuleradAmortering,
+      totalKostnad,
+      uppskattatVarde,
+    });
+  }
+  
+  return prognoser;
+}
+
+/**
+ * Beräknar alternativ med olika kontantinsatser
+ * 
+ * @param input - BostadsInput objekt
+ * @returns Array av KontantinsatsAlternativ objekt
+ */
+export function beraknaKontantinsatsAlternativ(
+  input: BostadsInput
+): KontantinsatsAlternativ[] {
+  const alternativ: KontantinsatsAlternativ[] = [];
+  const procent = [15, 20, 30, 50];
+  
+  for (const p of procent) {
+    const kontantinsatsBelopp = input.bostadspris * (p / 100);
+    const modifiedInput = {
+      ...input,
+      kontantinsats: kontantinsatsBelopp,
+    };
+    
+    const resultat = beraknaBostadskostnad(modifiedInput);
+    
+    alternativ.push({
+      kontantinsatsProcent: p,
+      kontantinsatsBelopp,
+      lanebelopp: resultat.lanebelopp,
+      belåningsgrad: resultat.belåningsgrad,
+      amorteringskrav: resultat.amorteringsprocent,
+      manadskostnad: resultat.totalPerManad,
+    });
+  }
+  
+  return alternativ;
+}
+
+/**
+ * Beräknar jämförelse med hyresrätt
+ * 
+ * @param bostadspris - Bostadspris
+ * @returns Uppskattad hyra baserat på schablon 150 kr/kvm (antaget 75 kvm för 3 Mkr)
+ */
+export function beraknaHyresJamforelse(bostadspris: number): number {
+  // Antag ca 40 kr/kvm per månad som schablon för genomsnittlig hyra
+  // Uppskatta storlek baserat på pris: ungefär 75 kvm för 3 Mkr
+  const uppskattadStorlek = (bostadspris / 3000000) * 75;
+  const hyraPerManad = uppskattadStorlek * 150;
+  return hyraPerManad;
 }
