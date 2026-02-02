@@ -333,6 +333,21 @@ export default function Home() {
                   <span className="text-gray-700 font-medium">Amorteringskrav</span>
                   <span className="text-gray-900 font-semibold">{formatPercent(resultat.amorteringsprocent)}{'\u00A0'}%</span>
                 </div>
+                {/* Amortization breakdown explanation */}
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm">
+                  <p className="text-gray-800 font-medium mb-1">Uppdelning av amorteringskrav:</p>
+                  <p className="text-gray-700">
+                    • Grundkrav (belåningsgrad): {formatPercent(resultat.amorteringsprocentGrundkrav)}%
+                  </p>
+                  {resultat.harSkarptKrav && (
+                    <p className="text-gray-700">
+                      • Skärpt krav (lån {'>'} 4.5 × årsinkomst): +{formatPercent(resultat.amorteringsprocentSkarptKrav)}%
+                    </p>
+                  )}
+                  <p className="text-gray-800 font-medium mt-2">
+                    = Totalt: {formatPercent(resultat.amorteringsprocent)}%
+                  </p>
+                </div>
                 <div className="flex justify-between items-center border-b pb-2">
                   <span className="text-gray-700 font-medium">Ränta per år</span>
                   <span className="text-gray-900 font-semibold">{formatNumber(resultat.rantaPerAr)} kr</span>
