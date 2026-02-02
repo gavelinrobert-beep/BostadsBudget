@@ -19,9 +19,12 @@ import {
   saveScenario,
   deleteScenario
 } from '@/lib/scenarios';
-import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown, CheckCircle2, Activity } from 'lucide-react';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown, CheckCircle2, Activity, Share2, Mail, Twitter as TwitterIcon, Linkedin } from 'lucide-react';
 import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
+import CountUp from 'react-countup';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import html2canvas from 'html2canvas';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -49,6 +52,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState<boolean>(false);
+  const [showShareMenu, setShowShareMenu] = useState<boolean>(false);
+  const [kontantinsatsSlider, setKontantinsatsSlider] = useState<number>(15);
   
   // Scenario management state
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
@@ -224,6 +230,59 @@ export default function Home() {
     }
   };
 
+  // Handle save as image
+  const handleSaveAsImage = async () => {
+    if (!resultsRef.current) return;
+    
+    setIsGeneratingImage(true);
+    try {
+      const canvas = await html2canvas(resultsRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        logging: false,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `bostadsbudget-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      alert('Ett fel uppstod vid generering av bilden. Försök igen.');
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
+  // Handle share
+  const handleShare = (platform: string) => {
+    if (!resultat) return;
+    
+    const text = `Mitt bostadsbudget: ${formatNumber(resultat.totalPerManad)} kr/mån med ${formatPercent(resultat.belåningsgrad)}% belåningsgrad`;
+    const url = window.location.href;
+    
+    switch (platform) {
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'email':
+        window.location.href = `mailto:?subject=${encodeURIComponent('Mitt bostadsbudget')}&body=${encodeURIComponent(text + '\n\n' + url)}`;
+        break;
+    }
+    
+    setShowShareMenu(false);
+  };
+
+  // Handle kontantinsats slider change
+  const handleKontantinsatsSliderChange = (value: number) => {
+    setKontantinsatsSlider(value);
+    const newKontantinsats = (value / 100) * input.bostadspris;
+    setInput({ ...input, kontantinsats: newKontantinsats });
+  };
+
   // Handle scenario selection toggle
   const handleToggleScenarioSelection = (id: string) => {
     const newSelected = new Set(selectedScenarios);
@@ -270,6 +329,14 @@ export default function Home() {
     return 'bg-red-600 dark:bg-red-700'; // > 85%
   };
 
+  // Get gradient colors for belåningsgrad card
+  const getBelåningsgradGradient = (ltv: number): string => {
+    if (ltv < 0.5) return 'from-green-400 to-green-600'; // < 50%
+    if (ltv < 0.7) return 'from-yellow-400 to-yellow-600'; // 50-70%
+    if (ltv < 0.85) return 'from-orange-400 to-orange-600'; // 70-85%
+    return 'from-red-400 to-red-600'; // > 85%
+  };
+
   const getBelåningsgradTextColor = (ltv: number): string => {
     if (ltv < 0.5) return 'text-green-700';
     if (ltv < 0.7) return 'text-yellow-700';
@@ -296,6 +363,43 @@ export default function Home() {
       "Beräkna belåningsgrad",
       "Amorteringskrav enligt svenska regler"
     ]
+  };
+
+  // Circular progress bar component
+  const CircularProgress = ({ percentage, size = 120 }: { percentage: number; size?: number }) => {
+    const radius = (size - 10) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+    return (
+      <div className="relative inline-flex items-center justify-center">
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="rgba(255, 255, 255, 0.2)"
+            strokeWidth="8"
+            fill="none"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="white"
+            strokeWidth="8"
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-bold text-white">{percentage.toFixed(0)}%</span>
+        </div>
+      </div>
+    );
   };
 
   // Smooth scroll to form
@@ -729,39 +833,60 @@ export default function Home() {
         {/* Results */}
         {resultat && (
           <div ref={resultsRef} className="space-y-6 animate-slide-in-from-bottom">
-            {/* Three large cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Three large cards with 3D effects */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 perspective-1000">
               {/* Total monthly cost */}
-              <div className="bg-blue-600 dark:bg-blue-700 text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105">
-                <div className="flex items-center mb-2">
-                  <Calendar className="w-6 h-6 mr-2" />
-                  <h3 className="text-lg font-medium">Total månadskostnad</h3>
+              <div className="relative bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-300 hover:-translate-y-4 transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
+                {/* Subtle pattern background */}
+                <div className="absolute inset-0 opacity-10 rounded-xl" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                
+                <div className="relative z-10">
+                  <div className="flex flex-col items-center mb-4">
+                    <Calendar className="w-16 h-16 mb-3" />
+                    <h3 className="text-xl font-semibold text-center">Total månadskostnad</h3>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-5xl md:text-6xl font-black mb-2">
+                      <CountUp end={resultat.totalPerManad} duration={2} separator=" " /> kr
+                    </p>
+                  </div>
                 </div>
-                <p className="text-3xl font-bold">{formatNumber(resultat.totalPerManad)} kr</p>
               </div>
 
               {/* Total yearly cost */}
-              <div className="bg-green-600 dark:bg-green-700 text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105">
-                <div className="flex items-center mb-2">
-                  <Banknote className="w-6 h-6 mr-2" />
-                  <h3 className="text-lg font-medium">Total årskostnad</h3>
+              <div className="relative bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-300 hover:-translate-y-4 transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
+                {/* Subtle pattern background */}
+                <div className="absolute inset-0 opacity-10 rounded-xl" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, white 10px, white 11px)', backgroundSize: '20px 20px' }}></div>
+                
+                <div className="relative z-10">
+                  <div className="flex flex-col items-center mb-4">
+                    <Banknote className="w-16 h-16 mb-3" />
+                    <h3 className="text-xl font-semibold text-center">Total årskostnad</h3>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-5xl md:text-6xl font-black mb-2">
+                      <CountUp end={resultat.totalPerAr} duration={2} separator=" " /> kr
+                    </p>
+                  </div>
                 </div>
-                <p className="text-3xl font-bold">{formatNumber(resultat.totalPerAr)} kr</p>
               </div>
 
-              {/* LTV percentage with color coding */}
-              <div className={`${getBelåningsgradColor(resultat.belåningsgrad)} text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105`}>
-                <div className="flex items-center mb-2">
-                  <BarChart className="w-6 h-6 mr-2" />
-                  <h3 className="text-lg font-medium">Belåningsgrad</h3>
-                </div>
-                <p className="text-3xl font-bold">{formatPercent(resultat.belåningsgrad)}{'\u00A0'}%</p>
-                {/* Progress bar */}
-                <div className="mt-3 bg-white bg-opacity-30 rounded-full h-2">
-                  <div 
-                    className="bg-white h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(resultat.belåningsgrad * 100, 100)}%` }}
-                  ></div>
+              {/* LTV percentage with circular progress */}
+              <div className={`relative bg-gradient-to-br ${getBelåningsgradGradient(resultat.belåningsgrad)} text-white rounded-xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-300 hover:-translate-y-4 transform-gpu`} style={{ transformStyle: 'preserve-3d' }}>
+                {/* Subtle pattern background */}
+                <div className="absolute inset-0 opacity-10 rounded-xl" style={{ backgroundImage: 'radial-gradient(circle, white 2px, transparent 2px)', backgroundSize: '25px 25px' }}></div>
+                
+                <div className="relative z-10">
+                  <div className="flex flex-col items-center mb-4">
+                    <BarChart className="w-16 h-16 mb-3" />
+                    <h3 className="text-xl font-semibold text-center">Belåningsgrad</h3>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <CircularProgress percentage={resultat.belåningsgrad * 100} size={140} />
+                    <p className="text-3xl font-black mt-4">
+                      <CountUp end={resultat.belåningsgrad * 100} duration={2} decimals={1} />%
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -790,53 +915,192 @@ export default function Home() {
               </div>
             )}
 
-            {/* Monthly breakdown */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Uppdelning per månad</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-2">
-                  <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium">
-                    <Building className="w-5 h-5 mr-2 text-blue-600 dark:text-gray-300" />
-                    <span>Lån (ränta + amortering)</span>
+            {/* Monthly breakdown with visual badges and progress bars */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-200">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                <Coins className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
+                Uppdelning per månad
+              </h2>
+              <div className="space-y-6">
+                {/* Loan */}
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-5 hover:scale-105 transition-all duration-200 shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 dark:bg-blue-900 rounded-full p-3 mr-4">
+                        <Building className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">Lån (ränta + amortering)</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Månatlig kostnad för lån</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(resultat.lanePerManad)} kr</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        {((resultat.lanePerManad / resultat.totalPerManad) * 100).toFixed(0)}%
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-gray-900 dark:text-gray-100 font-semibold">{formatNumber(resultat.lanePerManad)} kr</span>
+                  <div className="relative h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000"
+                      style={{ width: `${(resultat.lanePerManad / resultat.totalPerManad) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-2">
-                  <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium">
-                    <Zap className="w-5 h-5 mr-2 text-yellow-600 dark:text-gray-300" />
-                    <span>Drift + El</span>
+
+                {/* Drift + El */}
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-5 hover:scale-105 transition-all duration-200 shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="bg-yellow-100 dark:bg-yellow-900 rounded-full p-3 mr-4">
+                        <Zap className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">Drift + El</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Månatliga driftkostnader</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(resultat.driftOchElPerManad)} kr</p>
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">
+                        {((resultat.driftOchElPerManad / resultat.totalPerManad) * 100).toFixed(0)}%
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-gray-900 dark:text-gray-100 font-semibold">{formatNumber(resultat.driftOchElPerManad)} kr</span>
+                  <div className="relative h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute h-full bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full transition-all duration-1000"
+                      style={{ width: `${(resultat.driftOchElPerManad / resultat.totalPerManad) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center border-b dark:border-gray-700 pb-2">
-                  <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium">
-                    <Wrench className="w-5 h-5 mr-2 text-orange-600 dark:text-gray-300" />
-                    <span>Renovering (snitt)</span>
+
+                {/* Renovering */}
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-5 hover:scale-105 transition-all duration-200 shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="bg-orange-100 dark:bg-orange-900 rounded-full p-3 mr-4">
+                        <Wrench className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">Renovering (snitt)</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Genomsnittlig månadskostnad</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(resultat.renoveringPerManad)} kr</p>
+                      <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                        {((resultat.renoveringPerManad / resultat.totalPerManad) * 100).toFixed(0)}%
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-gray-900 dark:text-gray-100 font-semibold">{formatNumber(resultat.renoveringPerManad)} kr</span>
+                  <div className="relative h-3 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-1000"
+                      style={{ width: `${(resultat.renoveringPerManad / resultat.totalPerManad) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Long-term forecast - placed after Monthly breakdown and before Loan details */}
+            {/* Long-term forecast with interactive charts */}
             {langsiktigPrognos && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Långsiktig prognos</h2>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-200">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                  <Activity className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
+                  Långsiktig prognos
+                </h2>
+                
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  {/* Line chart for remaining loan */}
+                  <div className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-md">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Kvarvarande lån över tid</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={langsiktigPrognos}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="ar" stroke="#6b7280" />
+                        <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
+                        <Tooltip 
+                          formatter={(value: any) => [`${formatNumber(Number(value))} kr`]}
+                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                        />
+                        <Line type="monotone" dataKey="kvarandelLan" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 5 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Area chart for accumulated equity */}
+                  <div className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-md">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ackumulerat eget kapital</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={langsiktigPrognos}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="ar" stroke="#6b7280" />
+                        <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
+                        <Tooltip 
+                          formatter={(value: any) => [`${formatNumber(Number(value))} kr`]}
+                          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                        />
+                        <Area type="monotone" dataKey="egetKapital" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Enhanced table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead>
+                    <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
                       <tr className="border-b-2 border-gray-300 dark:border-gray-600">
-                        <th className="text-left py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">År</th>
-                        <th className="text-right py-3 px-3 font-semibold text-blue-700 dark:text-gray-300">Kvarvarande lån</th>
-                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">Ackumulerad amortering</th>
-                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">Total kostnad hittills</th>
-                        <th className="text-right py-3 px-3 font-semibold text-green-700 dark:text-gray-100">Uppskattat värde</th>
-                        <th className="text-right py-3 px-3 font-semibold text-green-700 dark:text-gray-100">Eget kapital</th>
+                        <th className="text-left py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            År
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-blue-700 dark:text-gray-300">
+                          <div className="flex items-center justify-end">
+                            <Building className="w-4 h-4 mr-2" />
+                            Kvarvarande lån
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Ack. amortering
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <Coins className="w-4 h-4 mr-2" />
+                            Total kostnad
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-green-700 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <HomeIcon className="w-4 h-4 mr-2" />
+                            Uppskattat värde
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-green-700 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Eget kapital
+                          </div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {langsiktigPrognos.map((prognos) => (
-                        <tr key={prognos.ar} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      {langsiktigPrognos.map((prognos, index) => (
+                        <tr 
+                          key={prognos.ar} 
+                          className={`border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors ${
+                            index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'
+                          }`}
+                        >
                           <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">{prognos.ar}</td>
                           <td className="text-right py-3 px-3 text-blue-600 dark:text-gray-300 font-medium">{formatNumber(prognos.kvarandelLan)} kr</td>
                           <td className="text-right py-3 px-3 text-gray-700 dark:text-gray-300">{formatNumber(prognos.ackumuleradAmortering)} kr</td>
@@ -848,95 +1112,137 @@ export default function Home() {
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                  <p>* Uppskattat värde baserat på 2% värdestegring per år</p>
-                  <p>* Eget kapital = Kontantinsats + Ackumulerad amortering + Värdestegring</p>
-                  <p>* Total kostnad inkluderar ränta (beräknat på kvarvarande lån varje år), amortering, drift, el och renovering</p>
+                <div className="mt-6 text-sm text-gray-600 dark:text-gray-300 space-y-1 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span>Uppskattat värde baserat på 2% värdestegring per år</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span>Eget kapital = Kontantinsats + Ackumulerad amortering + Värdestegring</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span>Total kostnad inkluderar ränta (beräknat på kvarvarande lån varje år), amortering, drift, el och renovering</span>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Sensitivity analysis - "What if..." scenarios */}
+            {/* Sensitivity analysis with enhanced visual design */}
             {kanslighetsAnalys && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Känslighetsanalys - &quot;Vad händer om...&quot;</h2>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-200">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                  <Activity className="w-8 h-8 mr-3 text-orange-600 dark:text-orange-400" />
+                  Känslighetsanalys - &quot;Vad händer om...&quot;
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Scenario 1: Interest rate +1% */}
-                  <div className="bg-orange-100 dark:bg-gray-700 border-2 border-orange-300 dark:border-gray-600 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
-                    <div className="flex items-center mb-3">
-                      <TrendingUp className="w-5 h-5 mr-2 text-orange-600 dark:text-gray-300" />
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Ränta +1%</h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-medium">Ny månadskostnad:</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {formatNumber(kanslighetsAnalys.rantaPlus1)} kr
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-orange-300 dark:border-gray-600">
-                        <div className="flex items-center text-orange-700 dark:text-gray-100">
-                          <span className="text-xl mr-1">↑</span>
-                          <span className="font-semibold">
-                            +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad))} kr/mån
-                          </span>
+                  <div className="relative bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 border-2 border-orange-400 dark:border-orange-600 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                    {/* Background pattern */}
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.5) 10px, rgba(255,255,255,0.5) 11px)' }}></div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex flex-col items-center mb-4">
+                        <div className="bg-orange-500 dark:bg-orange-600 rounded-full p-4 mb-3">
+                          <TrendingUp className="w-10 h-10 text-white" />
                         </div>
-                        <div className="text-sm text-orange-600 dark:text-gray-300 font-medium">
-                          (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad)}%)
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Ränta +1%</h3>
+                        <div className="mt-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          VARNING
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-700 dark:text-gray-200 text-center">
+                          <span className="font-medium">Ny månadskostnad:</span>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white text-center">
+                          {formatNumber(kanslighetsAnalys.rantaPlus1)} kr
+                        </div>
+                        <div className="mt-3 pt-3 border-t-2 border-orange-400 dark:border-orange-600">
+                          <div className="flex items-center justify-center text-orange-700 dark:text-orange-300">
+                            <span className="text-2xl mr-2 animate-bounce">↑</span>
+                            <span className="font-bold text-lg">
+                              +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad))} kr/mån
+                            </span>
+                          </div>
+                          <div className="text-center text-sm text-orange-700 dark:text-orange-300 font-semibold mt-1">
+                            (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad)}%)
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Scenario 2: Interest rate +2% */}
-                  <div className="bg-red-100 dark:bg-gray-700 border-2 border-red-300 dark:border-gray-600 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
-                    <div className="flex items-center mb-3">
-                      <TrendingUp className="w-5 h-5 mr-2 text-red-600 dark:text-gray-300" />
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Ränta +2%</h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-medium">Ny månadskostnad:</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {formatNumber(kanslighetsAnalys.rantaPlus2)} kr
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-red-300 dark:border-gray-600">
-                        <div className="flex items-center text-red-700 dark:text-gray-100">
-                          <span className="text-xl mr-1">↑</span>
-                          <span className="font-semibold">
-                            +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad))} kr/mån
-                          </span>
+                  <div className="relative bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800 border-2 border-red-400 dark:border-red-600 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                    {/* Background pattern */}
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 2px, transparent 2px)', backgroundSize: '20px 20px' }}></div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex flex-col items-center mb-4">
+                        <div className="bg-red-600 dark:bg-red-700 rounded-full p-4 mb-3">
+                          <TrendingUp className="w-10 h-10 text-white" />
                         </div>
-                        <div className="text-sm text-red-600 dark:text-gray-300 font-medium">
-                          (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad)}%)
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Ränta +2%</h3>
+                        <div className="mt-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          HÖG RISK
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-700 dark:text-gray-200 text-center">
+                          <span className="font-medium">Ny månadskostnad:</span>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white text-center">
+                          {formatNumber(kanslighetsAnalys.rantaPlus2)} kr
+                        </div>
+                        <div className="mt-3 pt-3 border-t-2 border-red-400 dark:border-red-600">
+                          <div className="flex items-center justify-center text-red-700 dark:text-red-300">
+                            <span className="text-2xl mr-2 animate-bounce">↑</span>
+                            <span className="font-bold text-lg">
+                              +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad))} kr/mån
+                            </span>
+                          </div>
+                          <div className="text-center text-sm text-red-700 dark:text-red-300 font-semibold mt-1">
+                            (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad)}%)
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Scenario 3: Electricity price doubles */}
-                  <div className="bg-yellow-100 dark:bg-gray-700 border-2 border-yellow-300 dark:border-gray-600 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
-                    <div className="flex items-center mb-3">
-                      <Zap className="w-5 h-5 mr-2 text-yellow-600 dark:text-gray-300" />
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Elpriset fördubblas</h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-medium">Ny månadskostnad:</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {formatNumber(kanslighetsAnalys.elFordubblas)} kr
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-gray-600">
-                        <div className="flex items-center text-yellow-700 dark:text-gray-100">
-                          <span className="text-xl mr-1">↑</span>
-                          <span className="font-semibold">
-                            +{formatNumber(calculateDifference(kanslighetsAnalys.elFordubblas, resultat.totalPerManad))} kr/mån
-                          </span>
+                  <div className="relative bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                    {/* Background pattern */}
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255,255,255,0.5) 10px, rgba(255,255,255,0.5) 11px)' }}></div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex flex-col items-center mb-4">
+                        <div className="bg-yellow-500 dark:bg-yellow-600 rounded-full p-4 mb-3">
+                          <Zap className="w-10 h-10 text-white" />
                         </div>
-                        <div className="text-sm text-yellow-600 dark:text-gray-300 font-medium">
-                          (+{calculatePercentageChange(kanslighetsAnalys.elFordubblas, resultat.totalPerManad)}%)
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Elpriset fördubblas</h3>
+                        <div className="mt-2 bg-yellow-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          OBSERVERA
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-700 dark:text-gray-200 text-center">
+                          <span className="font-medium">Ny månadskostnad:</span>
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white text-center">
+                          {formatNumber(kanslighetsAnalys.elFordubblas)} kr
+                        </div>
+                        <div className="mt-3 pt-3 border-t-2 border-yellow-400 dark:border-yellow-600">
+                          <div className="flex items-center justify-center text-yellow-700 dark:text-yellow-300">
+                            <span className="text-2xl mr-2 animate-bounce">↑</span>
+                            <span className="font-bold text-lg">
+                              +{formatNumber(calculateDifference(kanslighetsAnalys.elFordubblas, resultat.totalPerManad))} kr/mån
+                            </span>
+                          </div>
+                          <div className="text-center text-sm text-yellow-700 dark:text-yellow-300 font-semibold mt-1">
+                            (+{calculatePercentageChange(kanslighetsAnalys.elFordubblas, resultat.totalPerManad)}%)
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1091,8 +1397,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* PDF Export Button */}
-            <div className="mt-6 flex justify-center">
+            {/* Action Buttons - Export, Share, Save as Image */}
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              {/* PDF Export Button */}
               <button
                 onClick={handleExportPDF}
                 disabled={isGeneratingPdf}
@@ -1106,10 +1413,68 @@ export default function Home() {
                 ) : (
                   <>
                     <FileDown className="w-5 h-5" />
-                    <span>📄 Exportera till PDF</span>
+                    <span>Exportera PDF</span>
                   </>
                 )}
               </button>
+
+              {/* Save as Image Button */}
+              <button
+                onClick={handleSaveAsImage}
+                disabled={isGeneratingImage}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              >
+                {isGeneratingImage ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Sparar bild...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-5 h-5" />
+                    <span>Spara som bild</span>
+                  </>
+                )}
+              </button>
+
+              {/* Share Button with Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span>Dela resultat</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showShareMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Share Dropdown Menu */}
+                {showShareMenu && (
+                  <div className="absolute top-full mt-2 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50 min-w-[200px]">
+                    <button
+                      onClick={() => handleShare('twitter')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-900 dark:text-gray-100 transition-colors"
+                    >
+                      <TwitterIcon className="w-5 h-5 text-blue-400" />
+                      <span>Dela på Twitter</span>
+                    </button>
+                    <button
+                      onClick={() => handleShare('linkedin')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-900 dark:text-gray-100 transition-colors"
+                    >
+                      <Linkedin className="w-5 h-5 text-blue-600" />
+                      <span>Dela på LinkedIn</span>
+                    </button>
+                    <button
+                      onClick={() => handleShare('email')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-900 dark:text-gray-100 transition-colors"
+                    >
+                      <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <span>Dela via Email</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
