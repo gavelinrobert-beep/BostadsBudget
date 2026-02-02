@@ -78,12 +78,40 @@ export default function Home() {
     return (num * 100).toFixed(1);
   };
 
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Bostadsbudgetskalkylator",
+    "description": "Räkna ut din verkliga boendekostnad inklusive renovering och energi",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "SEK"
+    },
+    "featureList": [
+      "Beräkna månadskostnad för boende",
+      "Inkludera renovering och energikostnader",
+      "Beräkna belåningsgrad",
+      "Amorteringskrav enligt svenska regler"
+    ]
+  };
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">
-          Bostadsbudgetskalkylator
-        </h1>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <header>
+            <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">
+              Bostadsbudgetskalkylator
+            </h1>
+          </header>
 
         {/* Form */}
         <form onSubmit={handleBerakna} className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -317,7 +345,8 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

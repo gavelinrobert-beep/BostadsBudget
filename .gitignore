@@ -34,3 +34,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# expo/react-native
+bostadsbudget-mobile/node_modules/
+bostadsbudget-mobile/.expo/
+bostadsbudget-mobile/.expo-shared/
+bostadsbudget-mobile/dist/
+bostadsbudget-mobile/*.jks
+bostadsbudget-mobile/*.p8
+bostadsbudget-mobile/*.p12
+bostadsbudget-mobile/*.key
+bostadsbudget-mobile/*.mobileprovision
+bostadsbudget-mobile/*.orig.*
+bostadsbudget-mobile/web-build/
+bostadsbudget-mobile/android-service-account.json
+
+# EAS
+bostadsbudget-mobile/.eas-*
