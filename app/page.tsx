@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef } from 'react';
 import { 
   beraknaBostadskostnad, 
   beraknaKanslighetsAnalys,
@@ -13,6 +13,7 @@ import {
   LangsiktigPrognos,
   KontantinsatsAlternativ
 } from '@/lib/calculators';
+import { Home, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp } from 'lucide-react';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -39,6 +40,9 @@ export default function Home() {
   const [hyresJamforelse, setHyresJamforelse] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
+  
+  // Ref for smooth scrolling to results
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Validation
   const validateInput = (): string | null => {
@@ -85,6 +89,11 @@ export default function Home() {
       
       const rental = beraknaHyresJamforelse(input.bostadspris, input.bostadsyta);
       setHyresJamforelse(rental);
+      
+      // Smooth scroll to results
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ett fel uppstod vid beräkning');
       setResultat(null);
@@ -187,8 +196,9 @@ export default function Home() {
         {/* Form */}
         <form onSubmit={handleBerakna} className="space-y-6 mb-8">
           {/* Section: Bostad & Lån */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <Home className="w-6 h-6 mr-2 text-blue-600" />
               Bostad & Lån
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -271,8 +281,9 @@ export default function Home() {
           </div>
 
           {/* Section: Driftkostnader */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <Coins className="w-6 h-6 mr-2 text-green-600" />
               Driftkostnader
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -309,8 +320,9 @@ export default function Home() {
           </div>
 
           {/* Section: Renovering & Planering */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <Hammer className="w-6 h-6 mr-2 text-orange-600" />
               Renovering & Planering
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -372,14 +384,14 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 mt-6">
             <button
               type="submit"
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-200"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95"
             >
               Beräkna
             </button>
             <button
               type="button"
               onClick={handleAterstall}
-              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-md transition duration-200"
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95"
             >
               Återställ
             </button>
@@ -388,24 +400,33 @@ export default function Home() {
 
         {/* Results */}
         {resultat && (
-          <div className="space-y-6">
+          <div ref={resultsRef} className="space-y-6 animate-slide-in-from-bottom">
             {/* Three large cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Total monthly cost */}
-              <div className="bg-blue-600 text-white rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-medium mb-2">Total månadskostnad</h3>
+              <div className="bg-blue-600 text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105">
+                <div className="flex items-center mb-2">
+                  <Calendar className="w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-medium">Total månadskostnad</h3>
+                </div>
                 <p className="text-3xl font-bold">{formatNumber(resultat.totalPerManad)} kr</p>
               </div>
 
               {/* Total yearly cost */}
-              <div className="bg-green-600 text-white rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-medium mb-2">Total årskostnad</h3>
+              <div className="bg-green-600 text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105">
+                <div className="flex items-center mb-2">
+                  <Banknote className="w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-medium">Total årskostnad</h3>
+                </div>
                 <p className="text-3xl font-bold">{formatNumber(resultat.totalPerAr)} kr</p>
               </div>
 
               {/* LTV percentage with color coding */}
-              <div className={`${getBelåningsgradColor(resultat.belåningsgrad)} text-white rounded-lg shadow-lg p-6`}>
-                <h3 className="text-lg font-medium mb-2">Belåningsgrad</h3>
+              <div className={`${getBelåningsgradColor(resultat.belåningsgrad)} text-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-105`}>
+                <div className="flex items-center mb-2">
+                  <BarChart className="w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-medium">Belåningsgrad</h3>
+                </div>
                 <p className="text-3xl font-bold">{formatPercent(resultat.belåningsgrad)}{'\u00A0'}%</p>
                 {/* Progress bar */}
                 <div className="mt-3 bg-white bg-opacity-30 rounded-full h-2">
@@ -442,19 +463,28 @@ export default function Home() {
             )}
 
             {/* Monthly breakdown */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Uppdelning per månad</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center border-b pb-2">
-                  <span className="text-gray-700 font-medium">Lån (ränta + amortering)</span>
+                  <div className="flex items-center text-gray-700 font-medium">
+                    <Building className="w-5 h-5 mr-2 text-blue-600" />
+                    <span>Lån (ränta + amortering)</span>
+                  </div>
                   <span className="text-gray-900 font-semibold">{formatNumber(resultat.lanePerManad)} kr</span>
                 </div>
                 <div className="flex justify-between items-center border-b pb-2">
-                  <span className="text-gray-700 font-medium">Drift + El</span>
+                  <div className="flex items-center text-gray-700 font-medium">
+                    <Zap className="w-5 h-5 mr-2 text-yellow-600" />
+                    <span>Drift + El</span>
+                  </div>
                   <span className="text-gray-900 font-semibold">{formatNumber(resultat.driftOchElPerManad)} kr</span>
                 </div>
                 <div className="flex justify-between items-center border-b pb-2">
-                  <span className="text-gray-700 font-medium">Renovering (snitt)</span>
+                  <div className="flex items-center text-gray-700 font-medium">
+                    <Wrench className="w-5 h-5 mr-2 text-orange-600" />
+                    <span>Renovering (snitt)</span>
+                  </div>
                   <span className="text-gray-900 font-semibold">{formatNumber(resultat.renoveringPerManad)} kr</span>
                 </div>
               </div>
@@ -462,7 +492,7 @@ export default function Home() {
 
             {/* Long-term forecast - placed after Monthly breakdown and before Loan details */}
             {langsiktigPrognos && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Långsiktig prognos</h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -500,12 +530,15 @@ export default function Home() {
 
             {/* Sensitivity analysis - "What if..." scenarios */}
             {kanslighetsAnalys && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Känslighetsanalys - &quot;Vad händer om...&quot;</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Scenario 1: Interest rate +1% */}
-                  <div className="bg-orange-100 border-2 border-orange-300 rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Ränta +1%</h3>
+                  <div className="bg-orange-100 border-2 border-orange-300 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
+                    <div className="flex items-center mb-3">
+                      <TrendingUp className="w-5 h-5 mr-2 text-orange-600" />
+                      <h3 className="text-lg font-bold text-gray-900">Ränta +1%</h3>
+                    </div>
                     <div className="space-y-2">
                       <div className="text-sm text-gray-700">
                         <span className="font-medium">Ny månadskostnad:</span>
@@ -528,8 +561,11 @@ export default function Home() {
                   </div>
 
                   {/* Scenario 2: Interest rate +2% */}
-                  <div className="bg-red-100 border-2 border-red-300 rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Ränta +2%</h3>
+                  <div className="bg-red-100 border-2 border-red-300 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
+                    <div className="flex items-center mb-3">
+                      <TrendingUp className="w-5 h-5 mr-2 text-red-600" />
+                      <h3 className="text-lg font-bold text-gray-900">Ränta +2%</h3>
+                    </div>
                     <div className="space-y-2">
                       <div className="text-sm text-gray-700">
                         <span className="font-medium">Ny månadskostnad:</span>
@@ -552,8 +588,11 @@ export default function Home() {
                   </div>
 
                   {/* Scenario 3: Electricity price doubles */}
-                  <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Elpriset fördubblas</h3>
+                  <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105">
+                    <div className="flex items-center mb-3">
+                      <Zap className="w-5 h-5 mr-2 text-yellow-600" />
+                      <h3 className="text-lg font-bold text-gray-900">Elpriset fördubblas</h3>
+                    </div>
                     <div className="space-y-2">
                       <div className="text-sm text-gray-700">
                         <span className="font-medium">Ny månadskostnad:</span>
@@ -579,7 +618,7 @@ export default function Home() {
             )}
 
             {/* Loan details with enhanced amortization explanation */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Låneuppgifter</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center border-b pb-2">
@@ -685,7 +724,7 @@ export default function Home() {
 
             {/* Down payment optimization */}
             {kontantinsatsAlternativ && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Kontantinsats-optimering</h2>
                 <p className="text-gray-700 mb-4">
                   Se hur olika kontantinsatser påverkar din månadskostnad och amorteringskrav:
