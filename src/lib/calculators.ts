@@ -51,6 +51,7 @@ export interface LangsiktigPrognos {
   ackumuleradAmortering: number;
   totalKostnad: number;
   uppskattatVarde: number; // Antagen 2% värdestegring/år
+  egetKapital: number; // kontantinsats + amortering + värdestegring
 }
 
 /**
@@ -193,30 +194,55 @@ export function beraknaKanslighetsAnalys(
 }
 
 /**
- * Beräknar långsiktig prognos för år 1, 5 och 10
+ * Beräknar långsiktig prognos för år 1, 5, 10 och analysperiod (om > 10)
  * 
  * @param input - BostadsInput objekt
  * @param basResultat - Basresultat från huvudberäkningen
  * @returns Array av LangsiktigPrognos objekt
- * @note Detta är en förenklad beräkning som inte tar hänsyn till sjunkande ränta på minskande låneskuld
+ * @note Använder mer exakt beräkning med sjunkande räntekostnad baserat på kvarvarande lån
  */
 export function beraknaLangsiktigPrognos(
   input: BostadsInput,
   basResultat: BostadsResultat
 ): LangsiktigPrognos[] {
   const prognoser: LangsiktigPrognos[] = [];
-  const arToBerakna = [1, 5, 10];
   
+  // Bestäm vilka år att beräkna: 1, 5, 10, och analysperiod (om > 10)
+  const arToBerakna = [1, 5, 10];
+  if (input.analysperiod > 10 && !arToBerakna.includes(input.analysperiod)) {
+    arToBerakna.push(input.analysperiod);
+  }
+  
+  // Fast årlig amortering (lånet minskar linjärt)
+  const fastAmorteringPerAr = basResultat.amorteringPerAr;
+  
+  // Beräkna för varje år
   for (const ar of arToBerakna) {
     // Kvarvarande lån efter amortering
-    const ackumuleradAmortering = basResultat.amorteringPerAr * ar;
+    const ackumuleradAmortering = fastAmorteringPerAr * ar;
     const kvarandelLan = Math.max(0, basResultat.lanebelopp - ackumuleradAmortering);
     
-    // Total kostnad hittills (förenklad - använder konstant månadskostnad)
-    const totalKostnad = basResultat.totalPerAr * ar;
+    // Beräkna total kostnad mer exakt genom att summera varje år
+    // År 1: full ränta, År 2: ränta på (lån - amortering år 1), osv.
+    let totalRantaKostnad = 0;
+    for (let i = 0; i < ar; i++) {
+      const kvarandeLanVidAretsStart = Math.max(0, basResultat.lanebelopp - (fastAmorteringPerAr * i));
+      const rantaForAret = kvarandeLanVidAretsStart * input.arsranta;
+      totalRantaKostnad += rantaForAret;
+    }
+    
+    // Total kostnad = (ränta + amortering + drift + el + renovering) över perioden
+    const totalAmorteringKostnad = ackumuleradAmortering;
+    const totalDriftOchEl = (input.driftkostnad + input.elkostnad) * 12 * ar;
+    const totalRenovering = (input.renoveringskostnad / input.renoveringsintervall) * ar;
+    const totalKostnad = totalRantaKostnad + totalAmorteringKostnad + totalDriftOchEl + totalRenovering;
     
     // Uppskattat värde med 2% värdestegring per år
     const uppskattatVarde = input.bostadspris * Math.pow(1.02, ar);
+    
+    // Eget kapital = kontantinsats + ackumulerad amortering + värdestegring
+    const vardestegring = uppskattatVarde - input.bostadspris;
+    const egetKapital = input.kontantinsats + ackumuleradAmortering + vardestegring;
     
     prognoser.push({
       ar,
@@ -224,6 +250,7 @@ export function beraknaLangsiktigPrognos(
       ackumuleradAmortering,
       totalKostnad,
       uppskattatVarde,
+      egetKapital,
     });
   }
   

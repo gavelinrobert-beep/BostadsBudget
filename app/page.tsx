@@ -409,6 +409,44 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Long-term forecast - placed after Monthly breakdown and before Loan details */}
+            {langsiktigPrognos && (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Långsiktig prognos</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b-2 border-gray-300">
+                        <th className="text-left py-3 px-3 font-semibold text-gray-900">År</th>
+                        <th className="text-right py-3 px-3 font-semibold text-blue-700">Kvarvarande lån</th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900">Ackumulerad amortering</th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900">Total kostnad hittills</th>
+                        <th className="text-right py-3 px-3 font-semibold text-green-700">Uppskattat värde</th>
+                        <th className="text-right py-3 px-3 font-semibold text-green-700">Eget kapital</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {langsiktigPrognos.map((prognos) => (
+                        <tr key={prognos.ar} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-3 px-3 font-medium text-gray-900">{prognos.ar}</td>
+                          <td className="text-right py-3 px-3 text-blue-600 font-medium">{formatNumber(prognos.kvarandelLan)} kr</td>
+                          <td className="text-right py-3 px-3 text-gray-700">{formatNumber(prognos.ackumuleradAmortering)} kr</td>
+                          <td className="text-right py-3 px-3 text-gray-700">{formatNumber(prognos.totalKostnad)} kr</td>
+                          <td className="text-right py-3 px-3 text-green-600 font-medium">{formatNumber(prognos.uppskattatVarde)} kr</td>
+                          <td className="text-right py-3 px-3 text-green-600 font-semibold">{formatNumber(prognos.egetKapital)} kr</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4 text-sm text-gray-600 space-y-1">
+                  <p>* Uppskattat värde baserat på 2% värdestegring per år</p>
+                  <p>* Eget kapital = Kontantinsats + Ackumulerad amortering + Värdestegring</p>
+                  <p>* Total kostnad inkluderar ränta (beräknat på kvarvarande lån varje år), amortering, drift, el och renovering</p>
+                </div>
+              </div>
+            )}
+
             {/* Loan details with enhanced amortization explanation */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Låneuppgifter</h2>
@@ -502,46 +540,6 @@ export default function Home() {
                     <span className="text-gray-900 font-bold">{formatNumber(kanslighetsAnalys.elFordubblas)} kr/mån</span>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Long-term forecast */}
-            {langsiktigPrognos && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Långsiktig prognos</h2>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 text-sm">
-                  <p className="text-yellow-800">
-                    ⚠️ <strong>Förenklad beräkning:</strong> Denna prognos använder konstant månadskostnad och tar inte hänsyn till 
-                    att räntekostnaden sjunker när lånet amorteras. Den verkliga kostnaden kommer därför att vara något lägre över tid.
-                  </p>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b-2 border-gray-300">
-                        <th className="text-left py-2 px-2">År</th>
-                        <th className="text-right py-2 px-2">Kvarvarande lån</th>
-                        <th className="text-right py-2 px-2">Ackumulerad amortering</th>
-                        <th className="text-right py-2 px-2">Total kostnad hittills</th>
-                        <th className="text-right py-2 px-2">Uppskattat värde</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {langsiktigPrognos.map((prognos) => (
-                        <tr key={prognos.ar} className="border-b border-gray-200">
-                          <td className="py-2 px-2 font-medium">{prognos.ar}</td>
-                          <td className="text-right py-2 px-2">{formatNumber(prognos.kvarandelLan)} kr</td>
-                          <td className="text-right py-2 px-2">{formatNumber(prognos.ackumuleradAmortering)} kr</td>
-                          <td className="text-right py-2 px-2">{formatNumber(prognos.totalKostnad)} kr</td>
-                          <td className="text-right py-2 px-2">{formatNumber(prognos.uppskattatVarde)} kr</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-gray-600 text-sm mt-3">
-                  * Uppskattat värde baserat på 2% värdestegring per år
-                </p>
               </div>
             )}
 
