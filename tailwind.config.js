@@ -16,6 +16,10 @@ module.exports = {
         'DEFAULT': '0 2px 4px rgba(0, 0, 0, 0.3)',
         'lg': '0 2px 10px rgba(0, 0, 0, 0.3)',
       },
+      animationDelay: {
+        '1': '1s',
+        '2': '2s',
+      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
@@ -48,6 +52,14 @@ module.exports = {
           }),
         },
         { values: theme('textShadow') }
+      )
+      matchUtilities(
+        {
+          'animation-delay': (value) => ({
+            animationDelay: value,
+          }),
+        },
+        { values: theme('animationDelay') }
       )
     },
   ],
