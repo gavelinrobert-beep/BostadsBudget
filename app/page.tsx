@@ -406,63 +406,73 @@ export default function Home() {
         <div className="max-w-4xl mx-auto" ref={formRef}>
 
         {/* Form */}
-        <form onSubmit={handleBerakna} className="space-y-6 mb-8">
+        <form onSubmit={handleBerakna} className="space-y-8 mb-8">
           {/* Section: Bostad & Lån */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <HomeIcon className="w-6 h-6 mr-2 text-blue-600 dark:text-gray-300" />
-              Bostad & Lån
-            </h2>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800">
+              <div className="flex items-center mb-3">
+                <HomeIcon className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  Bostad & Lån
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-11">
+                Grundläggande uppgifter om din bostad och ekonomi
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Bostadspris */}
               <div>
-                <label htmlFor="bostadspris" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bostadspris (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Totalt pris för bostaden enligt köpekontrakt">ⓘ</span>
+                <label htmlFor="bostadspris" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Bostadspris (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Totalt pris för bostaden enligt köpekontrakt. Exempel: 3 000 000 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="bostadspris"
                   value={input.bostadspris}
                   onChange={(e) => setInput({ ...input, bostadspris: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="3 000 000"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Kontantinsats */}
               <div>
-                <label htmlFor="kontantinsats" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Kontantinsats (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Din egen insats, minst 15% av priset krävs i Sverige">ⓘ</span>
+                <label htmlFor="kontantinsats" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Kontantinsats (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Din egen insats, minst 15% av priset krävs i Sverige. Exempel: 450 000 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="kontantinsats"
                   value={input.kontantinsats}
                   onChange={(e) => setInput({ ...input, kontantinsats: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="450 000"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Årsinkomst */}
               <div>
-                <label htmlFor="arsinkomst" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Årsinkomst (kr) <span className="text-gray-500 dark:text-gray-400 text-xs">(valfritt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Din bruttoinkomst per år. Används för att beräkna skärpt amorteringskrav">ⓘ</span>
+                <label htmlFor="arsinkomst" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Årsinkomst (kr) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(valfritt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Din bruttoinkomst per år. Används för att beräkna skärpt amorteringskrav. Exempel: 500 000 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="arsinkomst"
                   value={input.arsinkomst || ''}
                   onChange={(e) => setInput({ ...input, arsinkomst: e.target.value ? Number(e.target.value) : undefined })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="500 000"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Årsränta */}
               <div>
-                <label htmlFor="arsranta" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Årsränta (%) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Aktuell bolåneränta. Genomsnitt idag: 4-5%">ⓘ</span>
+                <label htmlFor="arsranta" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Årsränta (%) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Aktuell bolåneränta. Genomsnitt idag: 4-5%. Exempel: 4.5%">💡</span>
                 </label>
                 <input
                   type="number"
@@ -470,22 +480,24 @@ export default function Home() {
                   step="0.1"
                   value={(input.arsranta * 100).toString()}
                   onChange={(e) => setInput({ ...input, arsranta: Number(e.target.value) / 100 })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="4.5"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="decimal"
                 />
               </div>
 
               {/* Bostadsyta */}
               <div>
-                <label htmlFor="bostadsyta" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bostadsyta (kvm) <span className="text-gray-500 dark:text-gray-400 text-xs">(valfritt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Ange bostadens storlek för att jämföra med hyresmarknad">ⓘ</span>
+                <label htmlFor="bostadsyta" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Bostadsyta (kvm) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(valfritt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Ange bostadens storlek för att jämföra med hyresmarknad. Exempel: 75 kvm">💡</span>
                 </label>
                 <input
                   type="number"
                   id="bostadsyta"
                   value={input.bostadsyta || ''}
                   onChange={(e) => setInput({ ...input, bostadsyta: e.target.value ? Number(e.target.value) : undefined })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="75"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
@@ -493,38 +505,47 @@ export default function Home() {
           </div>
 
           {/* Section: Driftkostnader */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <Coins className="w-6 h-6 mr-2 text-green-600 dark:text-gray-300" />
-              Driftkostnader
-            </h2>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-green-200 via-emerald-200 to-teal-200 dark:from-green-800 dark:via-emerald-800 dark:to-teal-800">
+              <div className="flex items-center mb-3">
+                <Coins className="w-8 h-8 mr-3 text-green-600 dark:text-green-400" />
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  Driftkostnader
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-11">
+                Månatliga kostnader för att bo i din fastighet
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Driftkostnad */}
               <div>
-                <label htmlFor="driftkostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Driftkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Avgift, försäkring, sophämtning etc. Vanligt: 2000-4000 kr/mån">ⓘ</span>
+                <label htmlFor="driftkostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Driftkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Avgift, försäkring, sophämtning etc. Vanligt: 2000-4000 kr/mån. Exempel: 3 000 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="driftkostnad"
                   value={input.driftkostnad}
                   onChange={(e) => setInput({ ...input, driftkostnad: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="3 000"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Elkostnad */}
               <div>
-                <label htmlFor="elkostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Elkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Uppskattad elkostnad per månad. Vanligt: 500-1500 kr/mån">ⓘ</span>
+                <label htmlFor="elkostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Elkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Uppskattad elkostnad per månad. Vanligt: 500-1500 kr/mån. Exempel: 800 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="elkostnad"
                   value={input.elkostnad}
                   onChange={(e) => setInput({ ...input, elkostnad: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="800"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
@@ -532,53 +553,63 @@ export default function Home() {
           </div>
 
           {/* Section: Renovering & Planering */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <Hammer className="w-6 h-6 mr-2 text-orange-600 dark:text-gray-300" />
-              Renovering & Planering
-            </h2>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+            <div className="mb-8 pb-6 border-b-2 border-gradient-to-r from-orange-200 via-amber-200 to-yellow-200 dark:from-orange-800 dark:via-amber-800 dark:to-yellow-800">
+              <div className="flex items-center mb-3">
+                <Hammer className="w-8 h-8 mr-3 text-orange-600 dark:text-orange-400" />
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  Renovering & Planering
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-11">
+                Planera för framtida renoveringar och långsiktig analys
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Renoveringskostnad */}
               <div>
-                <label htmlFor="renoveringskostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Renoveringskostnad (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Totalkostnad för planerad renovering (t.ex. kök 300 000 kr)">ⓘ</span>
+                <label htmlFor="renoveringskostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Renoveringskostnad (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Totalkostnad för planerad renovering (t.ex. kök 300 000 kr). Exempel: 200 000 kr">💡</span>
                 </label>
                 <input
                   type="number"
                   id="renoveringskostnad"
                   value={input.renoveringskostnad}
                   onChange={(e) => setInput({ ...input, renoveringskostnad: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="200 000"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Renoveringsintervall */}
               <div>
-                <label htmlFor="renoveringsintervall" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Renoveringsintervall (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Hur ofta behöver renoveringen göras? Kök: ~15 år, Badrum: ~20 år">ⓘ</span>
+                <label htmlFor="renoveringsintervall" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Renoveringsintervall (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Hur ofta behöver renoveringen göras? Kök: ~15 år, Badrum: ~20 år. Exempel: 10 år">💡</span>
                 </label>
                 <input
                   type="number"
                   id="renoveringsintervall"
                   value={input.renoveringsintervall}
                   onChange={(e) => setInput({ ...input, renoveringsintervall: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="10"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
 
               {/* Analysperiod */}
               <div>
-                <label htmlFor="analysperiod" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Analysperiod (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Hur många år framåt vill du planera? Rekommenderat: 10-15 år">ⓘ</span>
+                <label htmlFor="analysperiod" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Analysperiod (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Hur många år framåt vill du planera? Rekommenderat: 10-15 år. Exempel: 10 år">💡</span>
                 </label>
                 <input
                   type="number"
                   id="analysperiod"
                   value={input.analysperiod}
                   onChange={(e) => setInput({ ...input, analysperiod: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="10"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
               </div>
@@ -587,33 +618,34 @@ export default function Home() {
 
           {/* Error message */}
           {error && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-gray-700 rounded-md">
-              <p className="text-red-800 dark:text-gray-100 text-sm">{error}</p>
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-xl shadow-lg">
+              <p className="text-red-800 dark:text-red-200 text-sm font-medium">{error}</p>
             </div>
           )}
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <button
               type="submit"
-              className="flex-1 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95"
+              className="flex-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center"
             >
               Beräkna
+              <span className="ml-2 text-xl">→</span>
             </button>
             {resultat && (
               <button
                 type="button"
                 onClick={() => setShowSaveModal(true)}
-                className="flex-1 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95 flex items-center justify-center"
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center"
               >
                 <Save className="w-5 h-5 mr-2" />
-                💾 Spara scenario
+                Spara scenario
               </button>
             )}
             <button
               type="button"
               onClick={handleAterstall}
-              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95"
+              className="flex-1 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-4 px-8 text-lg rounded-xl transition-all duration-300 hover:scale-105"
             >
               Återställ
             </button>
