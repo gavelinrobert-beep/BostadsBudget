@@ -643,7 +643,7 @@ export default function Home() {
                         )}
                         {!resultat.harSkarptKrav && input.arsinkomst && input.arsinkomst > 0 && (
                           <li className="flex items-start">
-                            <span className="text-blue-600 mr-2 font-bold">ℹ️</span>
+                            <span className="text-blue-600 mr-2 font-bold" role="img" aria-label="Information">ℹ️</span>
                             <span className="text-gray-700">
                               Skärpt amorteringskrav gäller ej (lån {'<'} {SKARPT_KRAV_MULTIPLIKATOR} × årsinkomst)
                             </span>
