@@ -69,11 +69,30 @@ export default function Home() {
   const resultsRef = useRef<HTMLDivElement>(null);
   // Ref for smooth scrolling to form
   const formRef = useRef<HTMLDivElement>(null);
+  // Ref for share menu
+  const shareMenuRef = useRef<HTMLDivElement>(null);
 
   // Load saved scenarios on mount
   useEffect(() => {
     setSavedScenarios(getAllScenarios());
   }, []);
+
+  // Click outside handler for share menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false);
+      }
+    };
+
+    if (showShareMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showShareMenu]);
 
   // Validation
   const validateInput = (): string | null => {
@@ -1600,7 +1619,7 @@ export default function Home() {
               </button>
 
               {/* Share Button with Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={shareMenuRef}>
                 <button
                   onClick={() => setShowShareMenu(!showShareMenu)}
                   className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
