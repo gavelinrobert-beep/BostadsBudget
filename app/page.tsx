@@ -667,7 +667,7 @@ export default function Home() {
                         Din boendekostnad är ~{formatNumber(resultat.totalPerManad - hyresJamforelse)} kr/mån högre än hyra, men du bygger eget kapital
                       </p>
                     )}
-                    <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
                   </div>
                 </div>
               </div>
@@ -1049,7 +1049,7 @@ export default function Home() {
                         {formatPercent(scenario.resultat.belåningsgrad)}%
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-500">
+                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                       <span>Sparat:</span>
                       <span>{new Date(scenario.timestamp).toLocaleDateString('sv-SE')}</span>
                     </div>
