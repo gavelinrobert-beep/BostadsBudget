@@ -19,7 +19,8 @@ import {
   saveScenario,
   deleteScenario
 } from '@/lib/scenarios';
-import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X } from 'lucide-react';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown } from 'lucide-react';
+import { generatePDF } from '@/lib/pdfExport';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -46,6 +47,7 @@ export default function Home() {
   const [hyresJamforelse, setHyresJamforelse] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
   
   // Scenario management state
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
@@ -191,6 +193,31 @@ export default function Home() {
       const newSelected = new Set(selectedScenarios);
       newSelected.delete(id);
       setSelectedScenarios(newSelected);
+    }
+  };
+
+  // Handle PDF export
+  const handleExportPDF = async () => {
+    if (!resultat) {
+      return;
+    }
+    
+    setIsGeneratingPdf(true);
+    
+    try {
+      await generatePDF(
+        input,
+        resultat,
+        kanslighetsAnalys,
+        langsiktigPrognos,
+        kontantinsatsAlternativ,
+        hyresJamforelse
+      );
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      alert('Ett fel uppstod vid generering av PDF. Försök igen.');
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -944,6 +971,27 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {/* PDF Export Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleExportPDF}
+                disabled={isGeneratingPdf}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Genererar PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-5 h-5" />
+                    <span>📄 Exportera till PDF</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
 
