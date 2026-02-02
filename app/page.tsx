@@ -19,7 +19,7 @@ import {
   saveScenario,
   deleteScenario
 } from '@/lib/scenarios';
-import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown } from 'lucide-react';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown } from 'lucide-react';
 import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
 
@@ -61,6 +61,8 @@ export default function Home() {
   
   // Ref for smooth scrolling to results
   const resultsRef = useRef<HTMLDivElement>(null);
+  // Ref for smooth scrolling to form
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Load saved scenarios on mount
   useEffect(() => {
@@ -296,29 +298,66 @@ export default function Home() {
     ]
   };
 
+  // Smooth scroll to form
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <ThemeToggle />
-        <div className="max-w-4xl mx-auto">
-          <header className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-              Bostadsbudgetskalkylator
+        
+        {/* Hero Section */}
+        <section className="relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-800 text-white py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+              Räkna ut din verkliga boendekostnad
             </h1>
-            <p className="text-xl text-blue-700 dark:text-gray-300 font-medium mb-4">
-              Se den verkliga kostnaden innan du köper
+            <p className="text-lg sm:text-xl lg:text-2xl mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto">
+              Gratis kalkylator som inkluderar lån, drift, renovering och energi. Med svenska amorteringskrav och långsiktig prognos.
             </p>
-            <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-              Få en komplett bild av dina boendekostnader. Vårt verktyg räknar inte bara på 
-              lån och ränta, utan tar hänsyn till drift, el, och framtida renoveringar. 
-              Dessutom får du känslighetsanalyser och långsiktiga prognoser för att fatta 
-              ett välgrundat beslut.
-            </p>
-          </header>
+            
+            {/* Three benefits grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-3xl mx-auto">
+              <div className="flex flex-col items-center text-center p-4">
+                <div className="bg-white/10 rounded-full p-3 mb-3">
+                  <Check className="w-8 h-8" />
+                </div>
+                <p className="text-sm sm:text-base">Gratis och utan registrering</p>
+              </div>
+              <div className="flex flex-col items-center text-center p-4">
+                <div className="bg-white/10 rounded-full p-3 mb-3">
+                  <Check className="w-8 h-8" />
+                </div>
+                <p className="text-sm sm:text-base">Svenska amorteringsregler inbyggda</p>
+              </div>
+              <div className="flex flex-col items-center text-center p-4">
+                <div className="bg-white/10 rounded-full p-3 mb-3">
+                  <Check className="w-8 h-8" />
+                </div>
+                <p className="text-sm sm:text-base">Jämför scenarier och exportera till PDF</p>
+              </div>
+            </div>
+            
+            {/* CTA Button */}
+            <button
+              onClick={scrollToForm}
+              className="bg-white text-blue-600 hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700 font-bold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-lg inline-flex items-center"
+            >
+              Börja räkna
+              <ChevronDown className="ml-2 w-5 h-5" />
+            </button>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto" ref={formRef}>
 
         {/* Form */}
         <form onSubmit={handleBerakna} className="space-y-6 mb-8">
@@ -1281,6 +1320,36 @@ export default function Home() {
           </div>
         )}
         </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="bg-gray-800 text-gray-300 py-12 px-4 sm:px-6 lg:px-8 mt-16">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Copyright */}
+            <p className="text-lg font-semibold mb-3">
+              © 2026 Bostadsbudget. Alla rättigheter förbehållna.
+            </p>
+            
+            {/* Disclaimer */}
+            <p className="text-sm text-gray-400 mb-6 max-w-2xl mx-auto">
+              Detta verktyg ger uppskattningar baserat på dina uppgifter. För exakta kalkyler, kontakta din bank eller finansiell rådgivare.
+            </p>
+            
+            {/* Links */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-6 text-sm">
+              <a href="#" className="hover:text-white transition-colors">Om oss</a>
+              <span className="hidden sm:inline text-gray-600">|</span>
+              <a href="#" className="hover:text-white transition-colors">Kontakt</a>
+              <span className="hidden sm:inline text-gray-600">|</span>
+              <a href="#" className="hover:text-white transition-colors">Integritetspolicy</a>
+            </div>
+            
+            {/* Built with love */}
+            <p className="text-sm text-gray-500">
+              Byggt med ❤️ och AI
+            </p>
+          </div>
+        </footer>
       </main>
     </>
   );
