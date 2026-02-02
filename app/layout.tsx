@@ -3,28 +3,21 @@ import './globals.css'
 import { ThemeProvider } from './components/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'Bostadsbudget - Verklig boendekostnad',
-  description: 'Räkna ut din verkliga boendekostnad inklusive renovering och energi. Få en komplett bild av alla kostnader för din bostad.',
-  keywords: ['bostadsbudget', 'boendekostnad', 'boendekalkyl', 'bolånekalkylator', 'renovering', 'bostadskostnad', 'bolån', 'amortering', 'belåningsgrad'],
-  authors: [{ name: 'BostadsBudget' }],
-  creator: 'BostadsBudget',
-  publisher: 'BostadsBudget',
+  title: 'Bostadsbudget - Beräkna verklig boendekostnad',
+  description: 'Gratis kalkylator för att räkna ut total boendekostnad inklusive lån, drift, renovering och energi. Med svenska amorteringskrav.',
+  keywords: ['bostadskalkyl', 'bolånekalkyl', 'boendekostnad', 'amortering', 'bostadsbudget', 'sverige'],
+  authors: [{ name: 'Bostadsbudget' }],
   openGraph: {
+    title: 'Bostadsbudget - Beräkna verklig boendekostnad',
+    description: 'Se den totala kostnaden för din bostad innan du köper',
     type: 'website',
     locale: 'sv_SE',
-    url: 'https://bostadsbudget.vercel.app',
-    title: 'Bostadsbudget - Verklig boendekostnad',
-    description: 'Räkna ut din verkliga boendekostnad inklusive renovering och energi',
-    siteName: 'Bostadsbudget',
+    images: ['/og-image.png'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Bostadsbudget - Verklig boendekostnad',
-    description: 'Räkna ut din verkliga boendekostnad inklusive renovering och energi',
-  },
-  robots: {
-    index: true,
-    follow: true,
+    title: 'Bostadsbudget',
+    description: 'Beräkna verklig boendekostnad',
   },
 }
 
