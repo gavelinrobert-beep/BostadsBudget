@@ -13,7 +13,7 @@ import {
   LangsiktigPrognos,
   KontantinsatsAlternativ
 } from '@/lib/calculators';
-import { Home, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp } from 'lucide-react';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp } from 'lucide-react';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -198,7 +198,7 @@ export default function Home() {
           {/* Section: Bostad & Lån */}
           <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              <Home className="w-6 h-6 mr-2 text-blue-600" />
+              <HomeIcon className="w-6 h-6 mr-2 text-blue-600" />
               Bostad & Lån
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
