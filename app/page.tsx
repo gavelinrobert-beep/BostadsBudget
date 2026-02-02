@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent, useRef } from 'react';
+import { useState, FormEvent, useRef, useEffect } from 'react';
 import { 
   beraknaBostadskostnad, 
   beraknaKanslighetsAnalys,
@@ -13,7 +13,13 @@ import {
   LangsiktigPrognos,
   KontantinsatsAlternativ
 } from '@/lib/calculators';
-import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp } from 'lucide-react';
+import { 
+  SavedScenario,
+  getAllScenarios,
+  saveScenario,
+  deleteScenario
+} from '@/lib/scenarios';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X } from 'lucide-react';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -41,8 +47,22 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
   
+  // Scenario management state
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
+  const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
+  const [scenarioName, setScenarioName] = useState<string>('');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [selectedScenarios, setSelectedScenarios] = useState<Set<string>>(new Set());
+  const [showCompareView, setShowCompareView] = useState<boolean>(false);
+  
   // Ref for smooth scrolling to results
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Load saved scenarios on mount
+  useEffect(() => {
+    setSavedScenarios(getAllScenarios());
+  }, []);
 
   // Validation
   const validateInput = (): string | null => {
@@ -109,6 +129,84 @@ export default function Home() {
     setKontantinsatsAlternativ(null);
     setHyresJamforelse(null);
     setError(null);
+  };
+
+  // Handle save scenario
+  const handleSaveScenario = () => {
+    if (!resultat) {
+      return;
+    }
+    
+    setSaveError(null);
+    setSaveSuccess(false);
+    
+    const result = saveScenario(scenarioName, input, resultat);
+    
+    if (result.success) {
+      setSaveSuccess(true);
+      setScenarioName('');
+      setSavedScenarios(getAllScenarios());
+      
+      // Close modal after a short delay
+      setTimeout(() => {
+        setShowSaveModal(false);
+        setSaveSuccess(false);
+      }, 1500);
+    } else {
+      setSaveError(result.error || 'Kunde inte spara scenariot');
+    }
+  };
+
+  // Handle load scenario
+  const handleLoadScenario = (scenario: SavedScenario) => {
+    setInput(scenario.input);
+    setResultat(scenario.resultat);
+    
+    // Recalculate additional analyses
+    const sensitivity = beraknaKanslighetsAnalys(scenario.input, scenario.resultat);
+    setKanslighetsAnalys(sensitivity);
+    
+    const forecast = beraknaLangsiktigPrognos(scenario.input, scenario.resultat);
+    setLangsiktigPrognos(forecast);
+    
+    const downPaymentOptions = beraknaKontantinsatsAlternativ(scenario.input);
+    setKontantinsatsAlternativ(downPaymentOptions);
+    
+    const rental = beraknaHyresJamforelse(scenario.input.bostadspris, scenario.input.bostadsyta);
+    setHyresJamforelse(rental);
+    
+    // Smooth scroll to results
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  // Handle delete scenario
+  const handleDeleteScenario = (id: string) => {
+    if (confirm('Är du säker på att du vill ta bort detta scenario?')) {
+      deleteScenario(id);
+      setSavedScenarios(getAllScenarios());
+      
+      // Remove from selected scenarios if it was selected
+      const newSelected = new Set(selectedScenarios);
+      newSelected.delete(id);
+      setSelectedScenarios(newSelected);
+    }
+  };
+
+  // Handle scenario selection toggle
+  const handleToggleScenarioSelection = (id: string) => {
+    const newSelected = new Set(selectedScenarios);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      if (newSelected.size >= 3) {
+        alert('Du kan max jämföra 3 scenarier åt gången');
+        return;
+      }
+      newSelected.add(id);
+    }
+    setSelectedScenarios(newSelected);
   };
 
   // Format number with Swedish thousand separator
@@ -388,6 +486,16 @@ export default function Home() {
             >
               Beräkna
             </button>
+            {resultat && (
+              <button
+                type="button"
+                onClick={() => setShowSaveModal(true)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-md transition duration-200 active:scale-95 flex items-center justify-center"
+              >
+                <Save className="w-5 h-5 mr-2" />
+                💾 Spara scenario
+              </button>
+            )}
             <button
               type="button"
               onClick={handleAterstall}
@@ -397,6 +505,80 @@ export default function Home() {
             </button>
           </div>
         </form>
+
+        {/* Save Modal */}
+        {showSaveModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-slide-in-from-bottom">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Spara scenario</h3>
+                <button
+                  onClick={() => {
+                    setShowSaveModal(false);
+                    setSaveError(null);
+                    setSaveSuccess(false);
+                    setScenarioName('');
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <label htmlFor="scenario-name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Namn på scenario
+                </label>
+                <input
+                  type="text"
+                  id="scenario-name"
+                  value={scenarioName}
+                  onChange={(e) => setScenarioName(e.target.value)}
+                  placeholder="T.ex. 'Lägenhet Vasastan' eller 'Hus på landet'"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveScenario();
+                    }
+                  }}
+                />
+              </div>
+
+              {saveError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-800 text-sm">{saveError}</p>
+                </div>
+              )}
+
+              {saveSuccess && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-green-800 text-sm">✓ Scenario sparat!</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveScenario}
+                  disabled={!scenarioName.trim()}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Spara
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSaveModal(false);
+                    setSaveError(null);
+                    setSaveSuccess(false);
+                    setScenarioName('');
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md transition duration-200"
+                >
+                  Avbryt
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         {resultat && (
@@ -762,6 +944,290 @@ export default function Home() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Saved Scenarios Section */}
+        {savedScenarios.length > 0 && (
+          <div className="mt-12 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <Save className="w-6 h-6 mr-2 text-blue-600" />
+                Sparade scenarier
+              </h2>
+              {selectedScenarios.size >= 2 && (
+                <button
+                  onClick={() => setShowCompareView(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 flex items-center"
+                >
+                  <GitCompare className="w-5 h-5 mr-2" />
+                  Jämför valda ({selectedScenarios.size})
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedScenarios.map((scenario) => (
+                <div
+                  key={scenario.id}
+                  className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start flex-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedScenarios.has(scenario.id)}
+                        onChange={() => handleToggleScenarioSelection(scenario.id)}
+                        className="mt-1 mr-3 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <h3 className="text-lg font-bold text-gray-900 flex-1">{scenario.name}</h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Bostadspris:</span>
+                      <span className="font-semibold">{formatNumber(scenario.input.bostadspris)} kr</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Månadskostnad:</span>
+                      <span className="font-semibold">{formatNumber(scenario.resultat.totalPerManad)} kr</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Belåningsgrad:</span>
+                      <span className={`font-semibold ${getBelåningsgradTextColor(scenario.resultat.belåningsgrad)}`}>
+                        {formatPercent(scenario.resultat.belåningsgrad)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Sparat:</span>
+                      <span>{new Date(scenario.timestamp).toLocaleDateString('sv-SE')}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleLoadScenario(scenario)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-md transition duration-200 flex items-center justify-center text-sm"
+                    >
+                      <Upload className="w-4 h-4 mr-1" />
+                      Ladda
+                    </button>
+                    <button
+                      onClick={() => handleDeleteScenario(scenario.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-md transition duration-200 flex items-center justify-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Comparison View Modal */}
+        {showCompareView && selectedScenarios.size >= 2 && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full p-6 my-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Jämför scenarier</h3>
+                <button
+                  onClick={() => setShowCompareView(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {(() => {
+                const selectedScenariosList = savedScenarios.filter(s => selectedScenarios.has(s.id));
+                
+                if (selectedScenariosList.length === 0) return null;
+
+                // Helper to determine best/worst values for coloring
+                const getBestWorst = (values: number[], lower: boolean = true) => {
+                  if (values.length === 0) return { best: null, worst: null };
+                  const sortedValues = [...values].sort((a, b) => a - b);
+                  return {
+                    best: lower ? sortedValues[0] : sortedValues[sortedValues.length - 1],
+                    worst: lower ? sortedValues[sortedValues.length - 1] : sortedValues[0]
+                  };
+                };
+
+                const getValueColor = (value: number, best: number | null, worst: number | null) => {
+                  if (best === worst || best === null || worst === null) return '';
+                  if (value === best) return 'bg-green-100 text-green-800 font-semibold';
+                  if (value === worst) return 'bg-red-100 text-red-800 font-semibold';
+                  return '';
+                };
+
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b-2 border-gray-300">
+                          <th className="text-left py-3 px-3 font-bold text-gray-900">Parameter</th>
+                          {selectedScenariosList.map(scenario => (
+                            <th key={scenario.id} className="text-right py-3 px-3 font-bold text-gray-900">
+                              {scenario.name}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Input values */}
+                        <tr className="border-b border-gray-200 bg-gray-50">
+                          <td colSpan={selectedScenariosList.length + 1} className="py-2 px-3 font-bold text-gray-700">
+                            Input
+                          </td>
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Bostadspris</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.input.bostadspris)} kr
+                            </td>
+                          ))}
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Kontantinsats</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.input.kontantinsats)} kr
+                            </td>
+                          ))}
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Årsränta</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatPercent(scenario.input.arsranta)}%
+                            </td>
+                          ))}
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Driftkostnad</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.input.driftkostnad)} kr/mån
+                            </td>
+                          ))}
+                        </tr>
+
+                        {/* Results with color coding */}
+                        <tr className="border-b border-gray-200 bg-gray-50">
+                          <td colSpan={selectedScenariosList.length + 1} className="py-2 px-3 font-bold text-gray-700">
+                            Resultat
+                          </td>
+                        </tr>
+
+                        {(() => {
+                          const monthlyValues = selectedScenariosList.map(s => s.resultat.totalPerManad);
+                          const { best: bestMonthly, worst: worstMonthly } = getBestWorst(monthlyValues, true);
+
+                          return (
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 px-3 text-gray-700 font-semibold">Månadskostnad</td>
+                              {selectedScenariosList.map(scenario => (
+                                <td 
+                                  key={scenario.id} 
+                                  className={`text-right py-2 px-3 ${getValueColor(scenario.resultat.totalPerManad, bestMonthly, worstMonthly)}`}
+                                >
+                                  {formatNumber(scenario.resultat.totalPerManad)} kr
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })()}
+
+                        {(() => {
+                          const yearlyValues = selectedScenariosList.map(s => s.resultat.totalPerAr);
+                          const { best: bestYearly, worst: worstYearly } = getBestWorst(yearlyValues, true);
+
+                          return (
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 px-3 text-gray-700">Årskostnad</td>
+                              {selectedScenariosList.map(scenario => (
+                                <td 
+                                  key={scenario.id} 
+                                  className={`text-right py-2 px-3 ${getValueColor(scenario.resultat.totalPerAr, bestYearly, worstYearly)}`}
+                                >
+                                  {formatNumber(scenario.resultat.totalPerAr)} kr
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })()}
+
+                        {(() => {
+                          const ltvValues = selectedScenariosList.map(s => s.resultat.belåningsgrad);
+                          const { best: bestLtv, worst: worstLtv } = getBestWorst(ltvValues, true);
+
+                          return (
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 px-3 text-gray-700 font-semibold">Belåningsgrad</td>
+                              {selectedScenariosList.map(scenario => (
+                                <td 
+                                  key={scenario.id} 
+                                  className={`text-right py-2 px-3 ${getValueColor(scenario.resultat.belåningsgrad, bestLtv, worstLtv)}`}
+                                >
+                                  {formatPercent(scenario.resultat.belåningsgrad)}%
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })()}
+
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Lånebelopp</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.resultat.lanebelopp)} kr
+                            </td>
+                          ))}
+                        </tr>
+
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Amortering per år</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.resultat.amorteringPerAr)} kr
+                            </td>
+                          ))}
+                        </tr>
+
+                        <tr className="border-b border-gray-100">
+                          <td className="py-2 px-3 text-gray-700">Ränta per år</td>
+                          {selectedScenariosList.map(scenario => (
+                            <td key={scenario.id} className="text-right py-2 px-3">
+                              {formatNumber(scenario.resultat.rantaPerAr)} kr
+                            </td>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold">Färgkodning:</span> 
+                        <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded">Bäst</span>
+                        <span className="ml-2 bg-red-100 text-red-800 px-2 py-1 rounded">Sämst</span>
+                      </p>
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={() => window.print()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+                      >
+                        Skriv ut / Exportera PDF
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         )}
         </div>
