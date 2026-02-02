@@ -173,17 +173,17 @@ export default function Home() {
           </header>
 
         {/* Form */}
-        <form onSubmit={handleBerakna} className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <form onSubmit={handleBerakna} className="space-y-6 mb-8">
           {/* Section: Bostad & Lån */}
-          <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              🏠 Bostad & Lån
+              Bostad & Lån
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Bostadspris */}
               <div>
                 <label htmlFor="bostadspris" className="block text-sm font-medium text-gray-700 mb-2">
-                  Bostadspris (kr) <span className="text-gray-400 cursor-help" title="Det totala priset för bostaden">ⓘ</span>
+                  Bostadspris (kr) <span className="text-gray-400 text-xs cursor-help" title="Totalt pris för bostaden enligt köpekontrakt">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -198,7 +198,7 @@ export default function Home() {
               {/* Kontantinsats */}
               <div>
                 <label htmlFor="kontantinsats" className="block text-sm font-medium text-gray-700 mb-2">
-                  Kontantinsats (kr) <span className="text-gray-400 cursor-help" title="Hur mycket du betalar kontant. Minst 15% krävs normalt.">ⓘ</span>
+                  Kontantinsats (kr) <span className="text-gray-400 text-xs cursor-help" title="Din egen insats, minst 15% av priset krävs i Sverige">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -213,7 +213,7 @@ export default function Home() {
               {/* Årsinkomst */}
               <div>
                 <label htmlFor="arsinkomst" className="block text-sm font-medium text-gray-700 mb-2">
-                  Årsinkomst (kr) <span className="text-gray-500 text-xs">(valfritt)</span> <span className="text-gray-400 cursor-help" title="Din årsinkomst påverkar amorteringskravet. Skärpt krav tillkommer om lån > 4.5 × inkomst.">ⓘ</span>
+                  Årsinkomst (kr) <span className="text-gray-500 text-xs">(valfritt)</span> <span className="text-gray-400 text-xs cursor-help" title="Din bruttoinkomst per år. Används för att beräkna skärpt amorteringskrav">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -228,7 +228,7 @@ export default function Home() {
               {/* Årsränta */}
               <div>
                 <label htmlFor="arsranta" className="block text-sm font-medium text-gray-700 mb-2">
-                  Årsränta (%) <span className="text-gray-400 cursor-help" title="Aktuell ränta på bolånet. Vanligtvis 3-5%.">ⓘ</span>
+                  Årsränta (%) <span className="text-gray-400 text-xs cursor-help" title="Aktuell bolåneränta. Genomsnitt idag: 4-5%">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -244,15 +244,15 @@ export default function Home() {
           </div>
 
           {/* Section: Driftkostnader */}
-          <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              💰 Driftkostnader
+              Driftkostnader
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Driftkostnad */}
               <div>
                 <label htmlFor="driftkostnad" className="block text-sm font-medium text-gray-700 mb-2">
-                  Driftkostnad (kr/mån) <span className="text-gray-400 cursor-help" title="Avgift till förening (för bostadsrätt) eller andra löpande kostnader. Vanligtvis 2000-5000 kr/mån.">ⓘ</span>
+                  Driftkostnad (kr/mån) <span className="text-gray-400 text-xs cursor-help" title="Avgift, försäkring, sophämtning etc. Vanligt: 2000-4000 kr/mån">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -267,7 +267,7 @@ export default function Home() {
               {/* Elkostnad */}
               <div>
                 <label htmlFor="elkostnad" className="block text-sm font-medium text-gray-700 mb-2">
-                  Elkostnad (kr/mån) <span className="text-gray-400 cursor-help" title="Uppskattad elkostnad per månad. Beror på bostadens storlek och dina vanor. Vanligtvis 500-1500 kr/mån.">ⓘ</span>
+                  Elkostnad (kr/mån) <span className="text-gray-400 text-xs cursor-help" title="Uppskattad elkostnad per månad. Vanligt: 500-1500 kr/mån">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -282,15 +282,15 @@ export default function Home() {
           </div>
 
           {/* Section: Renovering & Planering */}
-          <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              🔨 Renovering & Planering
+              Renovering & Planering
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Renoveringskostnad */}
               <div>
                 <label htmlFor="renoveringskostnad" className="block text-sm font-medium text-gray-700 mb-2">
-                  Renoveringskostnad (kr) <span className="text-gray-400 cursor-help" title="Total kostnad för planerad renovering (kök, badrum, etc.). Slås ut över renoveringsintervallet.">ⓘ</span>
+                  Renoveringskostnad (kr) <span className="text-gray-400 text-xs cursor-help" title="Totalkostnad för planerad renovering (t.ex. kök 300 000 kr)">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -305,7 +305,7 @@ export default function Home() {
               {/* Renoveringsintervall */}
               <div>
                 <label htmlFor="renoveringsintervall" className="block text-sm font-medium text-gray-700 mb-2">
-                  Renoveringsintervall (år) <span className="text-gray-400 cursor-help" title="Om hur många år renoveringen planeras. Kostnaden fördelas jämnt.">ⓘ</span>
+                  Renoveringsintervall (år) <span className="text-gray-400 text-xs cursor-help" title="Hur ofta behöver renoveringen göras? Kök: ~15 år, Badrum: ~20 år">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -320,7 +320,7 @@ export default function Home() {
               {/* Analysperiod */}
               <div>
                 <label htmlFor="analysperiod" className="block text-sm font-medium text-gray-700 mb-2">
-                  Analysperiod (år) <span className="text-gray-400 cursor-help" title="Hur många år framåt du vill analysera kostnaderna.">ⓘ</span>
+                  Analysperiod (år) <span className="text-gray-400 text-xs cursor-help" title="Hur många år framåt vill du planera? Rekommenderat: 10-15 år">ⓘ</span>
                 </label>
                 <input
                   type="number"
