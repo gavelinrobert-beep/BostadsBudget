@@ -332,7 +332,7 @@ export default function Home() {
               {/* Bostadspris */}
               <div>
                 <label htmlFor="bostadspris" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bostadspris (kr) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Totalt pris för bostaden enligt köpekontrakt">ⓘ</span>
+                  Bostadspris (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Totalt pris för bostaden enligt köpekontrakt">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -347,7 +347,7 @@ export default function Home() {
               {/* Kontantinsats */}
               <div>
                 <label htmlFor="kontantinsats" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Kontantinsats (kr) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Din egen insats, minst 15% av priset krävs i Sverige">ⓘ</span>
+                  Kontantinsats (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Din egen insats, minst 15% av priset krävs i Sverige">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -377,7 +377,7 @@ export default function Home() {
               {/* Årsränta */}
               <div>
                 <label htmlFor="arsranta" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Årsränta (%) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Aktuell bolåneränta. Genomsnitt idag: 4-5%">ⓘ</span>
+                  Årsränta (%) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Aktuell bolåneränta. Genomsnitt idag: 4-5%">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -417,7 +417,7 @@ export default function Home() {
               {/* Driftkostnad */}
               <div>
                 <label htmlFor="driftkostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Driftkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Avgift, försäkring, sophämtning etc. Vanligt: 2000-4000 kr/mån">ⓘ</span>
+                  Driftkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Avgift, försäkring, sophämtning etc. Vanligt: 2000-4000 kr/mån">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -432,7 +432,7 @@ export default function Home() {
               {/* Elkostnad */}
               <div>
                 <label htmlFor="elkostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Elkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Uppskattad elkostnad per månad. Vanligt: 500-1500 kr/mån">ⓘ</span>
+                  Elkostnad (kr/mån) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Uppskattad elkostnad per månad. Vanligt: 500-1500 kr/mån">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -456,7 +456,7 @@ export default function Home() {
               {/* Renoveringskostnad */}
               <div>
                 <label htmlFor="renoveringskostnad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Renoveringskostnad (kr) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Totalkostnad för planerad renovering (t.ex. kök 300 000 kr)">ⓘ</span>
+                  Renoveringskostnad (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Totalkostnad för planerad renovering (t.ex. kök 300 000 kr)">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -471,7 +471,7 @@ export default function Home() {
               {/* Renoveringsintervall */}
               <div>
                 <label htmlFor="renoveringsintervall" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Renoveringsintervall (år) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Hur ofta behöver renoveringen göras? Kök: ~15 år, Badrum: ~20 år">ⓘ</span>
+                  Renoveringsintervall (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Hur ofta behöver renoveringen göras? Kök: ~15 år, Badrum: ~20 år">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -486,7 +486,7 @@ export default function Home() {
               {/* Analysperiod */}
               <div>
                 <label htmlFor="analysperiod" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Analysperiod (år) <span className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs cursor-help" title="Hur många år framåt vill du planera? Rekommenderat: 10-15 år">ⓘ</span>
+                  Analysperiod (år) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help" title="Hur många år framåt vill du planera? Rekommenderat: 10-15 år">ⓘ</span>
                 </label>
                 <input
                   type="number"
@@ -548,7 +548,7 @@ export default function Home() {
                     setSaveSuccess(false);
                     setScenarioName('');
                   }}
-                  className="text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -640,9 +640,9 @@ export default function Home() {
                 </div>
                 <p className="text-3xl font-bold">{formatPercent(resultat.belåningsgrad)}{'\u00A0'}%</p>
                 {/* Progress bar */}
-                <div className="mt-3 bg-white dark:bg-gray-800 bg-opacity-30 rounded-full h-2">
+                <div className="mt-3 bg-white bg-opacity-30 rounded-full h-2">
                   <div 
-                    className="bg-white dark:bg-gray-800 h-2 rounded-full transition-all duration-500"
+                    className="bg-white h-2 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(resultat.belåningsgrad * 100, 100)}%` }}
                   ></div>
                 </div>
@@ -663,11 +663,11 @@ export default function Home() {
                         ✓ Du sparar ~{formatNumber(hyresJamforelse - resultat.totalPerManad)} kr/mån jämfört med hyra
                       </p>
                     ) : (
-                      <p className="text-orange-600 dark:text-gray-300 dark:text-gray-100 font-medium">
+                      <p className="text-orange-600 dark:text-gray-100 font-medium">
                         Din boendekostnad är ~{formatNumber(resultat.totalPerManad - hyresJamforelse)} kr/mån högre än hyra, men du bygger eget kapital
                       </p>
                     )}
-                    <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
+                    <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
                   </div>
                 </div>
               </div>
@@ -719,7 +719,7 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {langsiktigPrognos.map((prognos) => (
-                        <tr key={prognos.ar} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:hover:bg-gray-600">
+                        <tr key={prognos.ar} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                           <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">{prognos.ar}</td>
                           <td className="text-right py-3 px-3 text-blue-600 dark:text-gray-300 font-medium">{formatNumber(prognos.kvarandelLan)} kr</td>
                           <td className="text-right py-3 px-3 text-gray-700 dark:text-gray-300">{formatNumber(prognos.ackumuleradAmortering)} kr</td>
@@ -1049,7 +1049,7 @@ export default function Home() {
                         {formatPercent(scenario.resultat.belåningsgrad)}%
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-500">
                       <span>Sparat:</span>
                       <span>{new Date(scenario.timestamp).toLocaleDateString('sv-SE')}</span>
                     </div>
@@ -1084,7 +1084,7 @@ export default function Home() {
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Jämför scenarier</h3>
                 <button
                   onClick={() => setShowCompareView(false)}
-                  className="text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <X className="w-6 h-6" />
                 </button>
