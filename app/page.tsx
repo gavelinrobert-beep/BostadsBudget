@@ -402,6 +402,31 @@ export default function Home() {
     );
   };
 
+  // Info tooltip component
+  const InfoTooltip = ({ text, children }: { text: string; children: React.ReactNode }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    return (
+      <div className="relative inline-block">
+        <div
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+          className="cursor-help"
+        >
+          {children}
+        </div>
+        {showTooltip && (
+          <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg whitespace-nowrap">
+            {text}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+              <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Smooth scroll to form
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1356,43 +1381,180 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Down payment optimization */}
+            {/* Down payment optimization with interactive slider */}
             {kontantinsatsAlternativ && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-200 hover:scale-[1.01]">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Kontantinsats-optimering</h2>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  Se hur olika kontantinsatser påverkar din månadskostnad och amorteringskrav:
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-200">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+                  <Coins className="w-8 h-8 mr-3 text-green-600 dark:text-green-400" />
+                  Kontantinsats-optimering
+                </h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+                  Justera kontantinsatsen och se hur det påverkar din månadskostnad och amorteringskrav:
                 </p>
+
+                {/* Interactive Slider */}
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-6 mb-6 shadow-md">
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Kontantinsats: {kontantinsatsSlider}%
+                      </label>
+                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {formatNumber((kontantinsatsSlider / 100) * input.bostadspris)} kr
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={kontantinsatsSlider}
+                      onChange={(e) => setKontantinsatsSlider(Number(e.target.value))}
+                      className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                      style={{
+                        background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${kontantinsatsSlider}%, #e5e7eb ${kontantinsatsSlider}%, #e5e7eb 100%)`
+                      }}
+                    />
+                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      <span>10%</span>
+                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">50% (Ingen amortering)</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+
+                  {/* Sweet spots markers */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-200 dark:border-green-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Bästa läge</p>
+                      <p className="text-lg font-bold text-green-700 dark:text-green-400">{'<'} 50%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Inget amorteringskrav</p>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-2 border-yellow-200 dark:border-yellow-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Neutralt</p>
+                      <p className="text-lg font-bold text-yellow-700 dark:text-yellow-400">50-70%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">1% amortering</p>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-2 border-orange-200 dark:border-orange-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Högre krav</p>
+                      <p className="text-lg font-bold text-orange-700 dark:text-orange-400">{'>'} 70%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">2% amortering</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart showing monthly cost vs down payment */}
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-6 mb-6 shadow-md">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Månadskostnad vs Kontantinsats</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={kontantinsatsAlternativ}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="kontantinsatsProcent" 
+                        stroke="#6b7280"
+                        label={{ value: 'Kontantinsats (%)', position: 'insideBottom', offset: -5 }}
+                      />
+                      <YAxis 
+                        stroke="#6b7280" 
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        label={{ value: 'Månadskostnad (kr)', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        formatter={(value: any) => [`${formatNumber(Number(value))} kr/mån`]}
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="manadskostnad" 
+                        stroke="#3b82f6" 
+                        strokeWidth={3} 
+                        dot={{ fill: '#3b82f6', r: 5 }}
+                        activeDot={{ r: 8 }}
+                      />
+                      {/* Mark the 50% and 70% thresholds */}
+                      <Line 
+                        type="monotone" 
+                        dataKey={(data) => data.kontantinsatsProcent === 50 ? data.manadskostnad : null}
+                        stroke="#eab308" 
+                        strokeWidth={0}
+                        dot={{ fill: '#eab308', r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Enhanced table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead>
+                    <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
                       <tr className="border-b-2 border-gray-300 dark:border-gray-600">
-                        <th className="text-left py-2 px-2">Kontantinsats</th>
-                        <th className="text-right py-2 px-2">Belåningsgrad</th>
-                        <th className="text-right py-2 px-2">Amorteringskrav</th>
-                        <th className="text-right py-2 px-2">Månadskostnad</th>
+                        <th className="text-left py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center">
+                            <Coins className="w-4 h-4 mr-2" />
+                            Kontantinsats
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <BarChart className="w-4 h-4 mr-2" />
+                            Belåningsgrad
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Amorteringskrav
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Månadskostnad
+                          </div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {kontantinsatsAlternativ.map((alt) => {
+                      {kontantinsatsAlternativ.map((alt, index) => {
                         const isCurrent = Math.abs(alt.kontantinsatsBelopp - input.kontantinsats) < 1000;
+                        const isSweetSpot = alt.kontantinsatsProcent === 50;
                         return (
                           <tr 
                             key={alt.kontantinsatsProcent} 
-                            className={`border-b border-gray-200 dark:border-gray-700 ${isCurrent ? 'bg-blue-100 dark:bg-blue-900/20 font-semibold' : ''}`}
+                            className={`border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors ${
+                              isCurrent ? 'bg-blue-100 dark:bg-blue-900/20 font-semibold' : 
+                              index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'
+                            } ${isSweetSpot ? 'border-l-4 border-l-yellow-500' : ''}`}
                           >
-                            <td className="py-2 px-2">
-                              {alt.kontantinsatsProcent}% ({formatNumber(alt.kontantinsatsBelopp)} kr)
-                              {isCurrent && ' ← Nuvarande'}
+                            <td className="py-3 px-3">
+                              <div className="flex items-center">
+                                {alt.kontantinsatsProcent}% ({formatNumber(alt.kontantinsatsBelopp)} kr)
+                                {isCurrent && <span className="ml-2 text-blue-600 dark:text-blue-400 font-bold">← Nuvarande</span>}
+                                {isSweetSpot && <span className="ml-2 text-yellow-600 dark:text-yellow-400 font-bold">⭐ Sweet spot</span>}
+                              </div>
                             </td>
-                            <td className="text-right py-2 px-2">{formatPercent(alt.belåningsgrad)}%</td>
-                            <td className="text-right py-2 px-2">{formatPercent(alt.amorteringskrav)}%</td>
-                            <td className="text-right py-2 px-2">{formatNumber(alt.manadskostnad)} kr</td>
+                            <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatPercent(alt.belåningsgrad)}%</td>
+                            <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatPercent(alt.amorteringskrav)}%</td>
+                            <td className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">{formatNumber(alt.manadskostnad)} kr</td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                <div className="mt-6 text-sm text-gray-600 dark:text-gray-300 space-y-1 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span><strong>Sweet spot vid 50%:</strong> Ingen amortering krävs, vilket ger lägre månadskostnad</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span><strong>50-70% belåningsgrad:</strong> Kräver 1% amortering per år</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-2">💡</span>
+                    <span><strong>Över 70% belåningsgrad:</strong> Kräver 2% amortering per år</span>
+                  </p>
                 </div>
               </div>
             )}
