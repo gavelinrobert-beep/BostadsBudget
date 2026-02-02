@@ -110,6 +110,16 @@ export default function Home() {
     return (num * 100).toFixed(1);
   };
 
+  // Calculate difference from base value
+  const calculateDifference = (newValue: number, baseValue: number): number => {
+    return newValue - baseValue;
+  };
+
+  // Calculate percentage change
+  const calculatePercentageChange = (newValue: number, baseValue: number): string => {
+    return ((newValue - baseValue) / baseValue * 100).toFixed(1);
+  };
+
   // Skärpt amorteringskrav threshold (4.5 × årsinkomst)
   const SKARPT_KRAV_MULTIPLIKATOR = 4.5;
 
@@ -466,11 +476,11 @@ export default function Home() {
                         <div className="flex items-center text-orange-700">
                           <span className="text-xl mr-1">↑</span>
                           <span className="font-semibold">
-                            +{formatNumber(kanslighetsAnalys.rantaPlus1 - resultat.totalPerManad)} kr/mån
+                            +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad))} kr/mån
                           </span>
                         </div>
                         <div className="text-sm text-orange-600 font-medium">
-                          (+{((kanslighetsAnalys.rantaPlus1 - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                          (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus1, resultat.totalPerManad)}%)
                         </div>
                       </div>
                     </div>
@@ -490,11 +500,11 @@ export default function Home() {
                         <div className="flex items-center text-red-700">
                           <span className="text-xl mr-1">↑</span>
                           <span className="font-semibold">
-                            +{formatNumber(kanslighetsAnalys.rantaPlus2 - resultat.totalPerManad)} kr/mån
+                            +{formatNumber(calculateDifference(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad))} kr/mån
                           </span>
                         </div>
                         <div className="text-sm text-red-600 font-medium">
-                          (+{((kanslighetsAnalys.rantaPlus2 - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                          (+{calculatePercentageChange(kanslighetsAnalys.rantaPlus2, resultat.totalPerManad)}%)
                         </div>
                       </div>
                     </div>
@@ -514,11 +524,11 @@ export default function Home() {
                         <div className="flex items-center text-yellow-700">
                           <span className="text-xl mr-1">↑</span>
                           <span className="font-semibold">
-                            +{formatNumber(kanslighetsAnalys.elFordubblas - resultat.totalPerManad)} kr/mån
+                            +{formatNumber(calculateDifference(kanslighetsAnalys.elFordubblas, resultat.totalPerManad))} kr/mån
                           </span>
                         </div>
                         <div className="text-sm text-yellow-600 font-medium">
-                          (+{((kanslighetsAnalys.elFordubblas - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                          (+{calculatePercentageChange(kanslighetsAnalys.elFordubblas, resultat.totalPerManad)}%)
                         </div>
                       </div>
                     </div>
