@@ -198,6 +198,7 @@ export function beraknaKanslighetsAnalys(
  * @param input - BostadsInput objekt
  * @param basResultat - Basresultat från huvudberäkningen
  * @returns Array av LangsiktigPrognos objekt
+ * @note Detta är en förenklad beräkning som inte tar hänsyn till sjunkande ränta på minskande låneskuld
  */
 export function beraknaLangsiktigPrognos(
   input: BostadsInput,
@@ -211,7 +212,7 @@ export function beraknaLangsiktigPrognos(
     const ackumuleradAmortering = basResultat.amorteringPerAr * ar;
     const kvarandelLan = Math.max(0, basResultat.lanebelopp - ackumuleradAmortering);
     
-    // Total kostnad hittills (förenklad - ej hänsyn till ränta på minskande lån)
+    // Total kostnad hittills (förenklad - använder konstant månadskostnad)
     const totalKostnad = basResultat.totalPerAr * ar;
     
     // Uppskattat värde med 2% värdestegring per år
@@ -267,10 +268,10 @@ export function beraknaKontantinsatsAlternativ(
  * Beräknar jämförelse med hyresrätt
  * 
  * @param bostadspris - Bostadspris
- * @returns Uppskattad hyra baserat på schablon 150 kr/kvm (antaget 75 kvm för 3 Mkr)
+ * @returns Uppskattad hyra baserat på schablon 150 kr/kvm (baserat på antagandet att 75 kvm kostar 3 Mkr)
  */
 export function beraknaHyresJamforelse(bostadspris: number): number {
-  // Antag ca 40 kr/kvm per månad som schablon för genomsnittlig hyra
+  // Antag ca 150 kr/kvm per månad som schablon för genomsnittlig hyra
   // Uppskatta storlek baserat på pris: ungefär 75 kvm för 3 Mkr
   const uppskattadStorlek = (bostadspris / 3000000) * 75;
   const hyraPerManad = uppskattadStorlek * 150;

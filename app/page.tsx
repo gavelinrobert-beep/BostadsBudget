@@ -110,6 +110,9 @@ export default function Home() {
     return (num * 100).toFixed(1);
   };
 
+  // Skärpt amorteringskrav threshold (4.5 × årsinkomst)
+  const SKARPT_KRAV_MULTIPLIKATOR = 4.5;
+
   // Get color for loan-to-value ratio
   const getBelåningsgradColor = (ltv: number): string => {
     if (ltv < 0.5) return 'bg-green-600'; // < 50%
@@ -437,7 +440,7 @@ export default function Home() {
                       <li className="flex items-start">
                         <span className="text-green-600 mr-2">✓</span>
                         <span className="text-gray-700">
-                          Lån {formatNumber(resultat.lanebelopp)} kr {'>'} 4.5 × årsinkomst {input.arsinkomst ? formatNumber(input.arsinkomst) : ''} kr 
+                          Lån {formatNumber(resultat.lanebelopp)} kr {'>'} {SKARPT_KRAV_MULTIPLIKATOR} × årsinkomst {input.arsinkomst ? formatNumber(input.arsinkomst) : ''} kr ({input.arsinkomst ? formatNumber(SKARPT_KRAV_MULTIPLIKATOR * input.arsinkomst) : ''} kr)
                           {' → '} +{formatPercent(resultat.amorteringsprocentSkarptKrav)}% (skärpt krav)
                         </span>
                       </li>
@@ -506,6 +509,12 @@ export default function Home() {
             {langsiktigPrognos && (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Långsiktig prognos</h2>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 text-sm">
+                  <p className="text-yellow-800">
+                    ⚠️ <strong>Förenklad beräkning:</strong> Denna prognos använder konstant månadskostnad och tar inte hänsyn till 
+                    att räntekostnaden sjunker när lånet amorteras. Den verkliga kostnaden kommer därför att vara något lägre över tid.
+                  </p>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
