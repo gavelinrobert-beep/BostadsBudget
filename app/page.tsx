@@ -447,6 +447,86 @@ export default function Home() {
               </div>
             )}
 
+            {/* Sensitivity analysis - "What if..." scenarios */}
+            {kanslighetsAnalys && (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Känslighetsanalys - &quot;Vad händer om...&quot;</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Scenario 1: Interest rate +1% */}
+                  <div className="bg-orange-100 border-2 border-orange-300 rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Ränta +1%</h3>
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-700">
+                        <span className="font-medium">Ny månadskostnad:</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatNumber(kanslighetsAnalys.rantaPlus1)} kr
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-orange-300">
+                        <div className="flex items-center text-orange-700">
+                          <span className="text-xl mr-1">↑</span>
+                          <span className="font-semibold">
+                            +{formatNumber(kanslighetsAnalys.rantaPlus1 - resultat.totalPerManad)} kr/mån
+                          </span>
+                        </div>
+                        <div className="text-sm text-orange-600 font-medium">
+                          (+{((kanslighetsAnalys.rantaPlus1 - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scenario 2: Interest rate +2% */}
+                  <div className="bg-red-100 border-2 border-red-300 rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Ränta +2%</h3>
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-700">
+                        <span className="font-medium">Ny månadskostnad:</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatNumber(kanslighetsAnalys.rantaPlus2)} kr
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-red-300">
+                        <div className="flex items-center text-red-700">
+                          <span className="text-xl mr-1">↑</span>
+                          <span className="font-semibold">
+                            +{formatNumber(kanslighetsAnalys.rantaPlus2 - resultat.totalPerManad)} kr/mån
+                          </span>
+                        </div>
+                        <div className="text-sm text-red-600 font-medium">
+                          (+{((kanslighetsAnalys.rantaPlus2 - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scenario 3: Electricity price doubles */}
+                  <div className="bg-yellow-100 border-2 border-yellow-300 rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Elpriset fördubblas</h3>
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-700">
+                        <span className="font-medium">Ny månadskostnad:</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatNumber(kanslighetsAnalys.elFordubblas)} kr
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-yellow-300">
+                        <div className="flex items-center text-yellow-700">
+                          <span className="text-xl mr-1">↑</span>
+                          <span className="font-semibold">
+                            +{formatNumber(kanslighetsAnalys.elFordubblas - resultat.totalPerManad)} kr/mån
+                          </span>
+                        </div>
+                        <div className="text-sm text-yellow-600 font-medium">
+                          (+{((kanslighetsAnalys.elFordubblas - resultat.totalPerManad) / resultat.totalPerManad * 100).toFixed(1)}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Loan details with enhanced amortization explanation */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Låneuppgifter</h2>
@@ -513,33 +593,6 @@ export default function Home() {
                 <p className="text-gray-600 text-sm mt-2">
                   (Baserat på schablonen 150 kr/kvm)
                 </p>
-              </div>
-            )}
-
-            {/* Sensitivity analysis */}
-            {kanslighetsAnalys && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Känslighetsanalys - "Vad händer om..."</h2>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-md">
-                    <span className="text-gray-700">
-                      <span className="font-medium">📈 Räntan ökar med +1%:</span>
-                    </span>
-                    <span className="text-gray-900 font-bold">{formatNumber(kanslighetsAnalys.rantaPlus1)} kr/mån</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-md">
-                    <span className="text-gray-700">
-                      <span className="font-medium">📈📈 Räntan ökar med +2%:</span>
-                    </span>
-                    <span className="text-gray-900 font-bold">{formatNumber(kanslighetsAnalys.rantaPlus2)} kr/mån</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
-                    <span className="text-gray-700">
-                      <span className="font-medium">⚡ El-priset fördubblas:</span>
-                    </span>
-                    <span className="text-gray-900 font-bold">{formatNumber(kanslighetsAnalys.elFordubblas)} kr/mån</span>
-                  </div>
-                </div>
               </div>
             )}
 
