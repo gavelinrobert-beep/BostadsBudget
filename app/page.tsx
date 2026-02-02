@@ -630,7 +630,7 @@ export default function Home() {
               className="flex-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center"
             >
               Beräkna
-              <span className="ml-2 text-xl">→</span>
+              <span className="ml-2 text-xl" aria-hidden="true">→</span>
             </button>
             {resultat && (
               <button
