@@ -539,6 +539,23 @@ Bostadsbudget Resultat
                     {formatPercent(resultat.amorteringsprocent)}{'\u00A0'}%
                   </Text>
                 </View>
+                {/* Amortization breakdown explanation */}
+                <View style={[styles.explanationBox, isDark && styles.explanationBoxDark]}>
+                  <Text style={[styles.explanationTitle, isDark && styles.textDark]}>
+                    Uppdelning av amorteringskrav:
+                  </Text>
+                  <Text style={[styles.explanationText, isDark && styles.textDark]}>
+                    • Grundkrav (belåningsgrad): {formatPercent(resultat.amorteringsprocentGrundkrav)}%
+                  </Text>
+                  {resultat.harSkarptKrav && (
+                    <Text style={[styles.explanationText, isDark && styles.textDark]}>
+                      • Skärpt krav (lån {'>'} 4.5 × årsinkomst): +{formatPercent(resultat.amorteringsprocentSkarptKrav)}%
+                    </Text>
+                  )}
+                  <Text style={[styles.explanationTotal, isDark && styles.textDark]}>
+                    = Totalt: {formatPercent(resultat.amorteringsprocent)}%
+                  </Text>
+                </View>
                 <View style={[styles.detailRow, isDark && styles.detailRowDark]}>
                   <Text style={[styles.detailLabel, isDark && styles.textDark]}>Ränta per år</Text>
                   <Text style={[styles.detailValue, isDark && styles.textDark]}>
@@ -670,5 +687,34 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#1f2937',
+  },
+  explanationBox: {
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  explanationBoxDark: {
+    backgroundColor: '#1e3a5f',
+    borderColor: '#3b82f6',
+  },
+  explanationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  explanationText: {
+    fontSize: 13,
+    color: '#374151',
+    marginBottom: 2,
+  },
+  explanationTotal: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginTop: 8,
   },
 });

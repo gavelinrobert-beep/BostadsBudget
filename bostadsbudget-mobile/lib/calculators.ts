@@ -20,6 +20,9 @@ export interface BostadsResultat {
   lanebelopp: number;
   belåningsgrad: number;
   amorteringsprocent: number;
+  amorteringsprocentGrundkrav: number; // Grundkrav baserat på belåningsgrad
+  amorteringsprocentSkarptKrav: number; // Skärpt krav (0% eller 1%)
+  harSkarptKrav: boolean; // Om skärpt krav tillämpas
   rantaPerAr: number;
   amorteringPerAr: number;
   lanePerManad: number;
@@ -59,19 +62,24 @@ export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
   const belåningsgrad = lanebelopp / input.bostadspris;
 
   // 3. Amorteringskrav baserat på belåningsgrad
-  let amorteringsprocent = 0;
+  let amorteringsprocentGrundkrav = 0;
   if (belåningsgrad > 0.7) {
-    amorteringsprocent = 0.02; // 2% per år
+    amorteringsprocentGrundkrav = 0.02; // 2% per år
   } else if (belåningsgrad > 0.5) {
-    amorteringsprocent = 0.01; // 1% per år
+    amorteringsprocentGrundkrav = 0.01; // 1% per år
   } else {
-    amorteringsprocent = 0; // 0% per år
+    amorteringsprocentGrundkrav = 0; // 0% per år
   }
 
   // 4. Skärpt amorteringskrav: Om årsinkomst finns och lånebelopp > 4.5 × årsinkomst, lägg till +1%
+  let amorteringsprocentSkarptKrav = 0;
+  let harSkarptKrav = false;
   if (input.arsinkomst && lanebelopp > 4.5 * input.arsinkomst) {
-    amorteringsprocent += 0.01;
+    amorteringsprocentSkarptKrav = 0.01;
+    harSkarptKrav = true;
   }
+
+  const amorteringsprocent = amorteringsprocentGrundkrav + amorteringsprocentSkarptKrav;
 
   // 5. Ränta per år = lånebelopp × årsränta
   const rantaPerAr = lanebelopp * input.arsranta;
@@ -102,6 +110,9 @@ export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
     lanebelopp,
     belåningsgrad,
     amorteringsprocent,
+    amorteringsprocentGrundkrav,
+    amorteringsprocentSkarptKrav,
+    harSkarptKrav,
     rantaPerAr,
     amorteringPerAr,
     lanePerManad,
