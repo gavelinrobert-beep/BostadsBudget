@@ -27,6 +27,7 @@ import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building
 import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
 import OneTimeCostsEnhanced from './components/OneTimeCostsEnhanced';
+import FirstYearTotalCost from './components/FirstYearTotalCost';
 import CountUp from 'react-countup';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import html2canvas from 'html2canvas';
@@ -1214,6 +1215,15 @@ export default function Home() {
                   renoveringskostnad={input.renoveringskostnad}
                   arsinkomst={input.arsinkomst}
                   bostadspris={input.bostadspris}
+                />
+                
+                {/* First Year Total Cost - New prominent section */}
+                <FirstYearTotalCost
+                  engangskostnader={engangskostnader}
+                  resultat={resultat}
+                  bostadspris={input.bostadspris}
+                  bostadsyta={input.bostadsyta}
+                  kontantinsats={input.kontantinsats}
                 />
               </div>
             )}
