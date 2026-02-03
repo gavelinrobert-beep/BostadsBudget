@@ -12,6 +12,11 @@ export interface BostadsInput {
   renoveringsintervall: number; // år
   analysperiod: number; // år
   bostadsyta?: number; // kvm (optional)
+  lagfartskostnad: number; // kr
+  pantbrevskostnad: number; // kr
+  pantbrevFinns: boolean; // Om pantbrev redan finns
+  maklarkostnad: number; // kr
+  ovrigaEngangskostnader: number; // kr
 }
 
 /**
@@ -312,4 +317,64 @@ export function beraknaHyresJamforelse(bostadspris: number, bostadsyta?: number)
   
   const hyraPerManad = storlek * 150;
   return hyraPerManad;
+}
+
+/**
+ * Beräknar lagfartskostnad (1.5% av köpeskillingen, min 825 kr)
+ * 
+ * @param bostadspris - Bostadspris
+ * @returns Lagfartskostnad i kr
+ */
+export function beraknaLagfart(bostadspris: number): number {
+  return Math.max(bostadspris * 0.015, 825);
+}
+
+/**
+ * Beräknar pantbrevskostnad (2% av lånebeloppet, max ca 76 000 kr)
+ * 
+ * @param lanebelopp - Lånebelopp
+ * @param pantbrevFinns - Om pantbrev redan finns (då blir kostnaden 0)
+ * @returns Pantbrevskostnad i kr
+ */
+export function beraknaPantbrev(lanebelopp: number, pantbrevFinns: boolean): number {
+  if (pantbrevFinns) {
+    return 0;
+  }
+  return Math.min(lanebelopp * 0.02, 76000);
+}
+
+/**
+ * Interface för engångskostnader
+ */
+export interface Engangskostnader {
+  kontantinsats: number;
+  lagfart: number;
+  pantbrev: number;
+  maklarkostnad: number;
+  ovrigt: number;
+  totalt: number;
+}
+
+/**
+ * Beräknar totala engångskostnader vid bostadsköp
+ * 
+ * @param input - BostadsInput objekt
+ * @returns Engangskostnader objekt med uppdelning
+ */
+export function beraknaEngangskostnader(input: BostadsInput): Engangskostnader {
+  const lagfart = input.lagfartskostnad;
+  const pantbrev = input.pantbrevskostnad;
+  const maklarkostnad = input.maklarkostnad;
+  const ovrigt = input.ovrigaEngangskostnader;
+  
+  const totalt = input.kontantinsats + lagfart + pantbrev + maklarkostnad + ovrigt;
+  
+  return {
+    kontantinsats: input.kontantinsats,
+    lagfart,
+    pantbrev,
+    maklarkostnad,
+    ovrigt,
+    totalt,
+  };
 }

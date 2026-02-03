@@ -7,11 +7,15 @@ import {
   beraknaLangsiktigPrognos,
   beraknaKontantinsatsAlternativ,
   beraknaHyresJamforelse,
+  beraknaLagfart,
+  beraknaPantbrev,
+  beraknaEngangskostnader,
   BostadsInput, 
   BostadsResultat,
   KanslighetsAnalys,
   LangsiktigPrognos,
-  KontantinsatsAlternativ
+  KontantinsatsAlternativ,
+  Engangskostnader
 } from '@/lib/calculators';
 import { 
   SavedScenario,
@@ -19,7 +23,7 @@ import {
   saveScenario,
   deleteScenario
 } from '@/lib/scenarios';
-import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown, CheckCircle2, Activity, Share2, Mail, Twitter as TwitterIcon, Linkedin } from 'lucide-react';
+import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown, CheckCircle2, Activity, Share2, Mail, Twitter as TwitterIcon, Linkedin, CreditCard, Receipt, DollarSign } from 'lucide-react';
 import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
 import CountUp from 'react-countup';
@@ -39,6 +43,11 @@ const DEFAULT_INPUT: BostadsInput = {
   renoveringsintervall: 10,
   analysperiod: 10,
   bostadsyta: 75,
+  lagfartskostnad: 45000, // 1.5% av 3000000
+  pantbrevskostnad: 51000, // 2% av 2550000
+  pantbrevFinns: false,
+  maklarkostnad: 0,
+  ovrigaEngangskostnader: 0,
 };
 
 export default function Home() {
@@ -50,6 +59,7 @@ export default function Home() {
   const [langsiktigPrognos, setLangsiktigPrognos] = useState<LangsiktigPrognos[] | null>(null);
   const [kontantinsatsAlternativ, setKontantinsatsAlternativ] = useState<KontantinsatsAlternativ[] | null>(null);
   const [hyresJamforelse, setHyresJamforelse] = useState<number | null>(null);
+  const [engangskostnader, setEngangskostnader] = useState<Engangskostnader | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAmortizationBreakdown, setShowAmortizationBreakdown] = useState<boolean>(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
@@ -72,6 +82,19 @@ export default function Home() {
   const formRef = useRef<HTMLDivElement>(null);
   // Ref for share menu
   const shareMenuRef = useRef<HTMLDivElement>(null);
+
+  // Auto-calculate lagfart and pantbrev when relevant fields change
+  useEffect(() => {
+    const lagfart = beraknaLagfart(input.bostadspris);
+    const lanebelopp = input.bostadspris - input.kontantinsats;
+    const pantbrev = beraknaPantbrev(lanebelopp, input.pantbrevFinns);
+    
+    setInput(prev => ({
+      ...prev,
+      lagfartskostnad: lagfart,
+      pantbrevskostnad: pantbrev,
+    }));
+  }, [input.bostadspris, input.kontantinsats, input.pantbrevFinns]);
 
   // Load saved scenarios on mount
   useEffect(() => {
@@ -141,6 +164,9 @@ export default function Home() {
       const rental = beraknaHyresJamforelse(input.bostadspris, input.bostadsyta);
       setHyresJamforelse(rental);
       
+      const engangskostnad = beraknaEngangskostnader(input);
+      setEngangskostnader(engangskostnad);
+      
       // Smooth scroll to results
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -159,6 +185,7 @@ export default function Home() {
     setLangsiktigPrognos(null);
     setKontantinsatsAlternativ(null);
     setHyresJamforelse(null);
+    setEngangskostnader(null);
     setError(null);
   };
 
@@ -240,7 +267,8 @@ export default function Home() {
         kanslighetsAnalys,
         langsiktigPrognos,
         kontantinsatsAlternativ,
-        hyresJamforelse
+        hyresJamforelse,
+        engangskostnader
       );
     } catch (error) {
       console.error('Failed to generate PDF:', error);
@@ -667,6 +695,116 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Section: Engångskostnader vid köp */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+            {/* Info box */}
+            <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                💡 Dessa kostnader betalas en gång i samband med köpet och måste du ha kontant. Glöm inte att räkna in dem i din budget!
+              </p>
+            </div>
+            
+            <div className="mb-8 pb-6 border-b-2 border-purple-200 dark:border-purple-800">
+              <div className="flex items-center mb-3">
+                <CreditCard className="w-8 h-8 mr-3 text-purple-600 dark:text-purple-400" />
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  Engångskostnader vid köp
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-11">
+                Belopp som betalas en gång när du köper bostaden
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Lagfartskostnad */}
+              <div>
+                <label htmlFor="lagfartskostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Lagfartskostnad (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Lagfart är den statliga avgiften för att registrera dig som ägare. Kostar 1.5% av köpeskillingen (min 825 kr). Betalas en gång.">💡</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    id="lagfartskostnad"
+                    value={input.lagfartskostnad}
+                    onChange={(e) => setInput({ ...input, lagfartskostnad: Number(e.target.value) })}
+                    placeholder="45 000"
+                    className="w-full py-4 px-5 text-lg font-medium border-2 border-blue-200 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
+                    inputMode="numeric"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 font-medium">Auto-beräknad</span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatiskt beräknad som 1.5% av köpesumman</p>
+              </div>
+
+              {/* Pantbrevskostnad */}
+              <div>
+                <label htmlFor="pantbrevskostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Pantbrevskostnad (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Om bostaden saknar pantbrev måste du skapa nya. Kostar 2% av lånebeloppet (max ca 76 000 kr). Behövs endast om pantbrev saknas. Kontrollera med säljaren.">💡</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    id="pantbrevskostnad"
+                    value={input.pantbrevskostnad}
+                    onChange={(e) => setInput({ ...input, pantbrevskostnad: Number(e.target.value) })}
+                    placeholder="51 000"
+                    className="w-full py-4 px-5 text-lg font-medium border-2 border-blue-200 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
+                    inputMode="numeric"
+                    disabled={input.pantbrevFinns}
+                  />
+                  {!input.pantbrevFinns && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 font-medium">Auto-beräknad</span>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center">
+                  <input
+                    type="checkbox"
+                    id="pantbrevFinns"
+                    checked={input.pantbrevFinns}
+                    onChange={(e) => setInput({ ...input, pantbrevFinns: e.target.checked })}
+                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor="pantbrevFinns" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Pantbrev finns redan (sätt kostnad till 0)
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatiskt beräknad som 2% av lånebeloppet om nya pantbrev behövs</p>
+              </div>
+
+              {/* Mäklararvode */}
+              <div>
+                <label htmlFor="maklarkostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Mäklararvode/arvode till säljare (kr) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(frivilligt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Normalt betalar säljaren mäklararvode. Vid nyproduktion eller vissa affärer kan köparen stå för denna kostnad. Lämna 0 om ej relevant.">💡</span>
+                </label>
+                <input
+                  type="number"
+                  id="maklarkostnad"
+                  value={input.maklarkostnad}
+                  onChange={(e) => setInput({ ...input, maklarkostnad: Number(e.target.value) })}
+                  placeholder="0"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
+                  inputMode="numeric"
+                />
+              </div>
+
+              {/* Övriga engångskostnader */}
+              <div>
+                <label htmlFor="ovrigaEngangskostnader" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                  Flyttkostnad, besiktning, renovering (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Besiktning: 5 000-15 000 kr, Flyttkostnad: 5 000-30 000 kr, Akuta renoveringar: varierar. Summera dina uppskattade engångskostnader här.">💡</span>
+                </label>
+                <input
+                  type="number"
+                  id="ovrigaEngangskostnader"
+                  value={input.ovrigaEngangskostnader}
+                  onChange={(e) => setInput({ ...input, ovrigaEngangskostnader: Number(e.target.value) })}
+                  placeholder="0"
+                  className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
+                  inputMode="numeric"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Section: Driftkostnader */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
             <div className="mb-8 pb-6 border-b-2 border-green-200 dark:border-green-800">
@@ -1014,6 +1152,67 @@ export default function Home() {
                     <p className="text-gray-500 dark:text-gray-400 text-xs mt-2">Baserat på 150 kr/kvm schablonhyra</p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Engångskostnader vid köp */}
+            {engangskostnader && (
+              <div className={`rounded-xl shadow-2xl p-8 border-2 transition-all duration-300 ${
+                engangskostnader.totalt > input.kontantinsats * 2 
+                  ? 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-300 dark:border-orange-700' 
+                  : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-300 dark:border-green-700'
+              }`}>
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+                    <CreditCard className="w-8 h-8 mr-3 text-purple-600 dark:text-purple-400" />
+                    💰 Engångskostnader vid köp
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 ml-11">
+                    Detta behöver du ha kontant innan köpet genomförs
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">Kontantinsats</span>
+                      <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(engangskostnader.kontantinsats)} kr</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">Lagfart (1.5%)</span>
+                      <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(engangskostnader.lagfart)} kr</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">
+                        Pantbrev (2%)
+                        {input.pantbrevFinns && <span className="ml-2 text-xs text-green-600 dark:text-green-400">(finns redan)</span>}
+                      </span>
+                      <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(engangskostnader.pantbrev)} kr</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">Mäklarkostnad</span>
+                      <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(engangskostnader.maklarkostnad)} kr</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b-2 border-gray-300 dark:border-gray-600">
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">Övrigt</span>
+                      <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatNumber(engangskostnader.ovrigt)} kr</span>
+                    </div>
+                    <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-lg px-4 mt-4">
+                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">💳 Totalt behov dag 1</span>
+                      <span className="text-3xl font-black text-purple-700 dark:text-purple-300">
+                        <CountUp end={engangskostnader.totalt} duration={2} separator=" " /> kr
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {engangskostnader.totalt > input.kontantinsats * 2 && (
+                  <div className="mt-4 bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-500 rounded p-4">
+                    <p className="text-sm text-orange-800 dark:text-orange-200">
+                      ⚠️ <strong>Obs!</strong> De totala engångskostnaderna är betydligt högre än din kontantinsats. Se till att du har tillräckligt med likvida medel.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

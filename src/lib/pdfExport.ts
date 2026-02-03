@@ -5,6 +5,7 @@ import {
   KanslighetsAnalys,
   LangsiktigPrognos,
   KontantinsatsAlternativ,
+  Engangskostnader,
 } from './calculators';
 
 // Helper function to format numbers
@@ -48,7 +49,8 @@ export const generatePDF = async (
   kanslighetsAnalys: KanslighetsAnalys | null,
   langsiktigPrognos: LangsiktigPrognos[] | null,
   kontantinsatsAlternativ: KontantinsatsAlternativ[] | null,
-  hyresJamforelse: number | null
+  hyresJamforelse: number | null,
+  engangskostnader: Engangskostnader | null
 ): Promise<void> => {
   const doc = new jsPDF();
   const totalPages = 3;
@@ -87,6 +89,43 @@ export const generatePDF = async (
   });
   
   yPos += 5;
+  
+  // Engångskostnader section
+  if (engangskostnader) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Engångskostnader vid köp', 15, yPos);
+    yPos += 8;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const engangskostnaderData = [
+      ['Kontantinsats', `${formatNumber(engangskostnader.kontantinsats)} kr`],
+      ['Lagfart (1.5%)', `${formatNumber(engangskostnader.lagfart)} kr`],
+      ['Pantbrev (2%)', `${formatNumber(engangskostnader.pantbrev)} kr`],
+      ['Mäklarkostnad', `${formatNumber(engangskostnader.maklarkostnad)} kr`],
+      ['Övrigt', `${formatNumber(engangskostnader.ovrigt)} kr`],
+    ];
+    
+    engangskostnaderData.forEach(([label, value]) => {
+      doc.text(label + ':', 20, yPos);
+      doc.text(value, 110, yPos);
+      yPos += 6;
+    });
+    
+    // Total with highlight
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setFillColor(147, 51, 234); // purple-600
+    doc.rect(15, yPos - 3, 140, 10, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.text('Totalt behov dag 1:', 20, yPos + 3);
+    doc.text(`${formatNumber(engangskostnader.totalt)} kr`, 110, yPos + 3);
+    doc.setTextColor(0, 0, 0);
+    
+    yPos += 12;
+  }
   
   // Key metrics cards
   doc.setFontSize(14);
