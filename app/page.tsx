@@ -26,6 +26,7 @@ import {
 import { Home as HomeIcon, Coins, Hammer, Calendar, Banknote, BarChart, Building, Zap, Wrench, TrendingUp, Save, Trash2, Upload, GitCompare, X, FileDown, Check, ChevronDown, CheckCircle2, Activity, Share2, Mail, Twitter as TwitterIcon, Linkedin, CreditCard, Receipt, DollarSign } from 'lucide-react';
 import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
+import OneTimeCostsEnhanced from './components/OneTimeCostsEnhanced';
 import CountUp from 'react-countup';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import html2canvas from 'html2canvas';
@@ -1159,12 +1160,8 @@ export default function Home() {
             )}
 
             {/* Engångskostnader vid köp */}
-            {engangskostnader && (
-              <div className={`rounded-xl shadow-2xl p-8 border-2 transition-all duration-300 ${
-                engangskostnader.totalt > input.kontantinsats * 2 
-                  ? 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-300 dark:border-orange-700' 
-                  : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-300 dark:border-green-700'
-              }`}>
+            {engangskostnader && resultat && (
+              <div className="rounded-xl shadow-2xl p-8 border-2 transition-all duration-300 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-300 dark:border-purple-700">
                 <div className="mb-6">
                   <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center">
                     <CreditCard className="w-8 h-8 mr-3 text-purple-600 dark:text-purple-400" />
@@ -1175,7 +1172,7 @@ export default function Home() {
                   </p>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
                       <span className="text-gray-700 dark:text-gray-300 font-medium">Kontantinsats</span>
@@ -1209,13 +1206,14 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {engangskostnader.totalt > input.kontantinsats * 2 && (
-                  <div className="mt-4 bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-500 rounded p-4">
-                    <p className="text-sm text-orange-800 dark:text-orange-200">
-                      ⚠️ <strong>Obs!</strong> De totala engångskostnaderna är betydligt högre än din kontantinsats. Se till att du har tillräckligt med likvida medel.
-                    </p>
-                  </div>
-                )}
+                {/* Enhanced features */}
+                <OneTimeCostsEnhanced
+                  engangskostnader={engangskostnader}
+                  kontantinsats={input.kontantinsats}
+                  totalPerManad={resultat.totalPerManad}
+                  renoveringskostnad={input.renoveringskostnad}
+                  arsinkomst={input.arsinkomst}
+                />
               </div>
             )}
 
