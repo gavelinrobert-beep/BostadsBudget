@@ -1,0 +1,95 @@
+<svg width="800" height="120" viewBox="0 0 800 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Row of city houses/apartments illustration for footer -->
+  <defs>
+    <linearGradient id="house1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="house2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="house3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f472b6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- House 1 - Left -->
+  <g transform="translate(50, 20)">
+    <polygon points="60,0 0,40 0,100 120,100 120,40" fill="url(#house1)"/>
+    <rect x="10" y="50" width="25" height="50" fill="rgba(255,255,255,0.3)"/>
+    <rect x="45" y="50" width="30" height="50" fill="rgba(255,255,255,0.2)"/>
+    <rect x="85" y="50" width="25" height="50" fill="rgba(255,255,255,0.3)"/>
+    <!-- Windows -->
+    <rect x="15" y="55" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+    <rect x="27" y="55" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+    <rect x="92" y="55" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+    <rect x="103" y="55" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+  </g>
+  
+  <!-- House 2 - Center -->
+  <g transform="translate(220, 30)">
+    <polygon points="70,0 0,35 0,90 140,90 140,35" fill="url(#house2)"/>
+    <rect x="15" y="45" width="30" height="45" fill="rgba(255,255,255,0.3)"/>
+    <rect x="55" y="45" width="30" height="45" fill="rgba(255,255,255,0.2)"/>
+    <rect x="95" y="45" width="30" height="45" fill="rgba(255,255,255,0.3)"/>
+    <!-- Windows -->
+    <rect x="20" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+    <rect x="35" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+    <rect x="60" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+    <rect x="75" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+    <rect x="100" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+    <rect x="115" y="50" width="10" height="12" fill="rgba(255,255,255,0.6)"/>
+  </g>
+  
+  <!-- House 3 - Taller building -->
+  <g transform="translate(410, 10)">
+    <rect x="0" y="0" width="100" height="110" fill="url(#house3)"/>
+    <!-- Windows grid -->
+    <g fill="rgba(255,255,255,0.5)">
+      <rect x="10" y="10" width="12" height="15"/>
+      <rect x="30" y="10" width="12" height="15"/>
+      <rect x="50" y="10" width="12" height="15"/>
+      <rect x="70" y="10" width="12" height="15"/>
+      
+      <rect x="10" y="35" width="12" height="15"/>
+      <rect x="30" y="35" width="12" height="15"/>
+      <rect x="50" y="35" width="12" height="15"/>
+      <rect x="70" y="35" width="12" height="15"/>
+      
+      <rect x="10" y="60" width="12" height="15"/>
+      <rect x="30" y="60" width="12" height="15"/>
+      <rect x="50" y="60" width="12" height="15"/>
+      <rect x="70" y="60" width="12" height="15"/>
+      
+      <rect x="10" y="85" width="12" height="15"/>
+      <rect x="70" y="85" width="12" height="15"/>
+    </g>
+    <!-- Door -->
+    <rect x="35" y="85" width="20" height="25" fill="rgba(255,255,255,0.3)"/>
+  </g>
+  
+  <!-- House 4 - Right smaller house -->
+  <g transform="translate(560, 35)">
+    <polygon points="50,0 0,30 0,85 100,85 100,30" fill="url(#house1)"/>
+    <rect x="10" y="40" width="20" height="45" fill="rgba(255,255,255,0.3)"/>
+    <rect x="40" y="40" width="20" height="45" fill="rgba(255,255,255,0.2)"/>
+    <rect x="70" y="40" width="20" height="45" fill="rgba(255,255,255,0.3)"/>
+    <!-- Windows -->
+    <rect x="14" y="45" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+    <rect x="74" y="45" width="8" height="10" fill="rgba(255,255,255,0.6)"/>
+  </g>
+  
+  <!-- House 5 - Far right -->
+  <g transform="translate(690, 40)">
+    <polygon points="40,0 0,25 0,80 80,80 80,25" fill="url(#house2)"/>
+    <rect x="8" y="35" width="18" height="45" fill="rgba(255,255,255,0.3)"/>
+    <rect x="32" y="35" width="16" height="45" fill="rgba(255,255,255,0.2)"/>
+    <rect x="54" y="35" width="18" height="45" fill="rgba(255,255,255,0.3)"/>
+    <!-- Windows -->
+    <rect x="12" y="40" width="7" height="9" fill="rgba(255,255,255,0.6)"/>
+    <rect x="35" y="40" width="7" height="9" fill="rgba(255,255,255,0.6)"/>
+    <rect x="58" y="40" width="7" height="9" fill="rgba(255,255,255,0.6)"/>
+  </g>
+</svg>
