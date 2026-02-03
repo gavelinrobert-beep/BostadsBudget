@@ -28,6 +28,9 @@ const formatNumber = (num: number): string => {
   return Math.round(num).toLocaleString('sv-SE');
 };
 
+// Estimated average rent per square meter per month in SEK
+const ESTIMATED_RENT_PER_SQM = 1500;
+
 export default function FirstYearTotalCost({
   engangskostnader,
   resultat,
@@ -50,7 +53,7 @@ export default function FirstYearTotalCost({
   const genomsnittPerManad = totaltAr1 / 12;
 
   // Calculate rental comparison if housing area is available
-  const hyresuppskattning = bostadsyta ? bostadsyta * 1500 * 12 : null; // 1500 kr/m² per månad är ungefär genomsnitt
+  const hyresuppskattning = bostadsyta ? bostadsyta * ESTIMATED_RENT_PER_SQM * 12 : null;
   const skillnadMotHyra = hyresuppskattning ? totaltAr1 - hyresuppskattning : null;
   
   // Calculate equity position
@@ -67,14 +70,16 @@ export default function FirstYearTotalCost({
           </h2>
           <div className="flex gap-2">
             <button 
-              className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Dela"
+              className="p-2 bg-white dark:bg-gray-800 rounded-lg opacity-50 cursor-not-allowed"
+              title="Dela (kommer snart)"
+              disabled
             >
               <Share2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
             <button 
-              className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Exportera"
+              className="p-2 bg-white dark:bg-gray-800 rounded-lg opacity-50 cursor-not-allowed"
+              title="Exportera (kommer snart)"
+              disabled
             >
               <FileDown className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -227,7 +232,7 @@ export default function FirstYearTotalCost({
                     {formatNumber(hyresuppskattning)} kr
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Baserat på ca {formatNumber((bostadsyta || 0) * 1500)} kr/mån
+                    Baserat på ca {formatNumber((bostadsyta || 0) * ESTIMATED_RENT_PER_SQM)} kr/mån
                   </p>
                 </div>
 
@@ -307,15 +312,27 @@ export default function FirstYearTotalCost({
           📋 Nästa steg
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <button className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold py-3 px-4 rounded-lg border-2 border-indigo-300 dark:border-indigo-700 transition-all duration-200 hover:scale-105 flex items-center justify-center">
+          <button 
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold py-3 px-4 rounded-lg border-2 border-indigo-300 dark:border-indigo-700 opacity-50 cursor-not-allowed flex items-center justify-center"
+            disabled
+            title="Kommer snart"
+          >
             <FileDown className="w-5 h-5 mr-2" />
             Exportera till PDF
           </button>
-          <button className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold py-3 px-4 rounded-lg border-2 border-indigo-300 dark:border-indigo-700 transition-all duration-200 hover:scale-105 flex items-center justify-center">
+          <button 
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold py-3 px-4 rounded-lg border-2 border-indigo-300 dark:border-indigo-700 opacity-50 cursor-not-allowed flex items-center justify-center"
+            disabled
+            title="Kommer snart"
+          >
             <Share2 className="w-5 h-5 mr-2" />
             Dela med partner/familj
           </button>
-          <button className="bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:scale-105 flex items-center justify-center col-span-1 md:col-span-2">
+          <button 
+            className="bg-indigo-600 dark:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg opacity-50 cursor-not-allowed flex items-center justify-center col-span-1 md:col-span-2"
+            disabled
+            title="Kommer snart"
+          >
             <DollarSign className="w-5 h-5 mr-2" />
             Boka möte med bank
           </button>
