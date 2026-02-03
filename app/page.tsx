@@ -89,12 +89,15 @@ export default function Home() {
     const lanebelopp = input.bostadspris - input.kontantinsats;
     const pantbrev = beraknaPantbrev(lanebelopp, input.pantbrevFinns);
     
-    setInput(prev => ({
-      ...prev,
-      lagfartskostnad: lagfart,
-      pantbrevskostnad: pantbrev,
-    }));
-  }, [input.bostadspris, input.kontantinsats, input.pantbrevFinns]);
+    // Only update if values actually changed to avoid infinite loop
+    if (input.lagfartskostnad !== lagfart || input.pantbrevskostnad !== pantbrev) {
+      setInput(prev => ({
+        ...prev,
+        lagfartskostnad: lagfart,
+        pantbrevskostnad: pantbrev,
+      }));
+    }
+  }, [input.bostadspris, input.kontantinsats, input.pantbrevFinns, input.lagfartskostnad, input.pantbrevskostnad]);
 
   // Load saved scenarios on mount
   useEffect(() => {
@@ -774,7 +777,7 @@ export default function Home() {
               {/* Mäklararvode */}
               <div>
                 <label htmlFor="maklarkostnad" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
-                  Mäklararvode/arvode till säljare (kr) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(frivilligt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Normalt betalar säljaren mäklararvode. Vid nyproduktion eller vissa affärer kan köparen stå för denna kostnad. Lämna 0 om ej relevant.">💡</span>
+                  Mäklarkostnad (kr) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(frivilligt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Normalt betalar säljaren mäklararvode. Vid nyproduktion eller vissa affärer kan köparen stå för denna kostnad. Lämna 0 om ej relevant.">💡</span>
                 </label>
                 <input
                   type="number"
@@ -790,7 +793,7 @@ export default function Home() {
               {/* Övriga engångskostnader */}
               <div>
                 <label htmlFor="ovrigaEngangskostnader" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
-                  Flyttkostnad, besiktning, renovering (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Besiktning: 5 000-15 000 kr, Flyttkostnad: 5 000-30 000 kr, Akuta renoveringar: varierar. Summera dina uppskattade engångskostnader här.">💡</span>
+                  Övriga engångskostnader (kr) <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Besiktning: 5 000-15 000 kr, Flyttkostnad: 5 000-30 000 kr, Akuta renoveringar: varierar. Summera dina uppskattade engångskostnader här.">💡</span>
                 </label>
                 <input
                   type="number"
