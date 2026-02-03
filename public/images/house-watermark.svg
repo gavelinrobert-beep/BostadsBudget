@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Subtle house silhouette watermark for results section -->
+  <g opacity="0.05">
+    <!-- House outline -->
+    <path d="M 100 40 L 40 90 L 40 160 L 160 160 L 160 90 Z" fill="currentColor"/>
+    
+    <!-- Roof ridge -->
+    <path d="M 100 40 L 160 90" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+    
+    <!-- Windows -->
+    <rect x="60" y="100" width="25" height="30" fill="white" opacity="0.3"/>
+    <rect x="115" y="100" width="25" height="30" fill="white" opacity="0.3"/>
+    
+    <!-- Door -->
+    <rect x="85" y="120" width="30" height="40" fill="white" opacity="0.3"/>
+    
+    <!-- Chimney -->
+    <rect x="130" y="60" width="15" height="30" fill="currentColor"/>
+  </g>
+</svg>

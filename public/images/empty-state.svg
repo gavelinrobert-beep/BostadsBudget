@@ -1,0 +1,70 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern line-art illustration of person looking at house plans -->
+  <defs>
+    <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Person silhouette -->
+  <g transform="translate(50, 80)">
+    <!-- Head -->
+    <circle cx="50" cy="30" r="18" stroke="url(#gradBlue)" stroke-width="3" fill="none"/>
+    
+    <!-- Body -->
+    <path d="M 50 48 L 50 100" stroke="url(#gradBlue)" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Arms -->
+    <path d="M 50 60 L 30 90" stroke="url(#gradBlue)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 50 60 L 70 55" stroke="url(#gradBlue)" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Legs -->
+    <path d="M 50 100 L 35 140" stroke="url(#gradBlue)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 50 100 L 65 140" stroke="url(#gradBlue)" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- House plan/blueprint -->
+  <g transform="translate(150, 60)">
+    <!-- Blueprint paper -->
+    <rect x="0" y="0" width="200" height="150" fill="#f0f9ff" stroke="url(#gradPurple)" stroke-width="2" rx="5"/>
+    
+    <!-- House outline on blueprint -->
+    <g stroke="url(#gradPurple)" stroke-width="2" fill="none">
+      <!-- Roof -->
+      <path d="M 40 40 L 100 20 L 160 40" stroke-linecap="round" stroke-linejoin="round"/>
+      
+      <!-- House body -->
+      <rect x="40" y="40" width="120" height="80" />
+      
+      <!-- Door -->
+      <rect x="80" y="80" width="30" height="40" />
+      
+      <!-- Windows -->
+      <rect x="50" y="55" width="20" height="15" />
+      <rect x="130" y="55" width="20" height="15" />
+    </g>
+    
+    <!-- Measurement lines -->
+    <g stroke="url(#gradPurple)" stroke-width="1" opacity="0.5">
+      <line x1="40" y1="130" x2="160" y2="130" stroke-dasharray="2,2"/>
+      <text x="90" y="145" fill="#8b5cf6" font-size="10" text-anchor="middle">75 kvm</text>
+    </g>
+  </g>
+  
+  <!-- Decorative elements -->
+  <g opacity="0.3">
+    <circle cx="320" cy="40" r="15" stroke="url(#gradPurple)" stroke-width="2" fill="none"/>
+    <circle cx="340" cy="250" r="12" stroke="url(#gradBlue)" stroke-width="2" fill="none"/>
+    <circle cx="30" cy="250" r="10" stroke="url(#gradPurple)" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Text below -->
+  <text x="200" y="270" fill="#6b7280" font-size="16" text-anchor="middle" font-weight="600">
+    Börja räkna på din bostad
+  </text>
+</svg>

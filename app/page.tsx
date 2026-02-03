@@ -25,6 +25,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import CountUp from 'react-countup';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import html2canvas from 'html2canvas';
+import Image from 'next/image';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
@@ -461,8 +462,22 @@ export default function Home() {
         <ThemeToggle />
         
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white py-20 md:py-32 px-4 sm:px-6 lg:px-8">
-          {/* Background overlay */}
+        <section className="relative overflow-hidden text-white py-20 md:py-32 px-4 sm:px-6 lg:px-8">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <Image 
+              src="/images/hero-bg.svg" 
+              alt="Swedish home interior" 
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50"></div>
+          
+          {/* Additional overlay for depth */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-blue-900/20"></div>
           
           {/* Animated floating icons */}
@@ -874,6 +889,27 @@ export default function Home() {
           </div>
         )}
 
+        {/* Empty State - Before any calculations */}
+        {!resultat && (
+          <div className="max-w-2xl mx-auto my-16 text-center animate-fade-in">
+            <div className="flex justify-center mb-8">
+              <Image 
+                src="/images/empty-state.svg" 
+                alt="Börja räkna på din bostad" 
+                width={400}
+                height={300}
+                className="opacity-90"
+              />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+              Fyll i formuläret för att se din totala boendekostnad
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Vi beräknar allt från lån och räntor till drift och renovering – så att du får en komplett bild av vad ditt boende verkligen kostar.
+            </p>
+          </div>
+        )}
+
         {/* Results */}
         {resultat && (
           <div ref={resultsRef} className="space-y-6 animate-slide-in-from-bottom">
@@ -881,6 +917,17 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 perspective-1000">
               {/* Total monthly cost */}
               <div className="relative bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-300 hover:-translate-y-4 transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
+                {/* House watermark */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <Image 
+                    src="/images/house-watermark.svg" 
+                    alt="" 
+                    width={200}
+                    height={200}
+                    className="opacity-30"
+                  />
+                </div>
+                
                 {/* Subtle pattern background */}
                 <div className="absolute inset-0 opacity-10 rounded-xl" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 
@@ -899,6 +946,17 @@ export default function Home() {
 
               {/* Total yearly cost */}
               <div className="relative bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl shadow-2xl p-8 hover:shadow-3xl transition-all duration-300 hover:-translate-y-4 transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
+                {/* House watermark */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <Image 
+                    src="/images/house-watermark.svg" 
+                    alt="" 
+                    width={200}
+                    height={200}
+                    className="opacity-30"
+                  />
+                </div>
+                
                 {/* Subtle pattern background */}
                 <div className="absolute inset-0 opacity-10 rounded-xl" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, white 10px, white 11px)', backgroundSize: '20px 20px' }}></div>
                 
@@ -1947,8 +2005,19 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <footer className="bg-gray-800 text-gray-300 py-12 px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="max-w-4xl mx-auto text-center">
+        <footer className="relative bg-gray-800 text-gray-300 py-12 px-4 sm:px-6 lg:px-8 mt-16 overflow-hidden">
+          {/* Footer houses illustration */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl opacity-20 pointer-events-none">
+            <Image 
+              src="/images/footer-houses.svg" 
+              alt="" 
+              width={800}
+              height={120}
+              className="w-full h-auto"
+            />
+          </div>
+          
+          <div className="relative z-10 max-w-4xl mx-auto text-center">
             {/* Copyright */}
             <p className="text-lg font-semibold mb-3">
               © 2026 Bostadsbudget. Alla rättigheter förbehållna.
