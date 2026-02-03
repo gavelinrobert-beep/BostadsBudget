@@ -1213,6 +1213,7 @@ export default function Home() {
                   totalPerManad={resultat.totalPerManad}
                   renoveringskostnad={input.renoveringskostnad}
                   arsinkomst={input.arsinkomst}
+                  bostadspris={input.bostadspris}
                 />
               </div>
             )}

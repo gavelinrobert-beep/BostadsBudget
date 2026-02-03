@@ -20,6 +20,7 @@ interface OneTimeCostsEnhancedProps {
   totalPerManad: number;
   renoveringskostnad: number;
   arsinkomst?: number;
+  bostadspris: number;
 }
 
 const formatNumber = (num: number): string => {
@@ -32,6 +33,7 @@ export default function OneTimeCostsEnhanced({
   totalPerManad,
   renoveringskostnad,
   arsinkomst,
+  bostadspris,
 }: OneTimeCostsEnhancedProps) {
   const [showChecklist, setShowChecklist] = useState(false);
   const [showSavingsCalc, setShowSavingsCalc] = useState(false);
@@ -53,7 +55,7 @@ export default function OneTimeCostsEnhanced({
     {
       label: 'Kontantinsats (15% minimum)',
       info: 'Minst 15% av köpeskillingen krävs för att få bolån',
-      checked: kontantinsats >= totaltBehov * 0.15,
+      checked: kontantinsats >= bostadspris * 0.15,
     },
     {
       label: `Lagfart (1.5% av köpesumma)`,
@@ -94,19 +96,29 @@ export default function OneTimeCostsEnhanced({
 
   // Calculate savings needed if insufficient
   const savingsNeeded = harTillrackligt ? 0 : Math.abs(skillnad);
-  const savingsOptions = [
+  
+  // Determine realism based on income if provided
+  const savingsOptions = arsinkomst ? [
+    { 
+      months: 12, 
+      amount: savingsNeeded / 12, 
+      realistic: savingsNeeded / 12 < (arsinkomst / 12) * 0.3 
+    },
+    { 
+      months: 24, 
+      amount: savingsNeeded / 24, 
+      realistic: savingsNeeded / 24 < (arsinkomst / 12) * 0.25 
+    },
+    { 
+      months: 36, 
+      amount: savingsNeeded / 36, 
+      realistic: savingsNeeded / 36 < (arsinkomst / 12) * 0.2 
+    },
+  ] : [
     { months: 12, amount: savingsNeeded / 12, realistic: false },
     { months: 24, amount: savingsNeeded / 24, realistic: true },
     { months: 36, amount: savingsNeeded / 36, realistic: true },
   ];
-
-  // Determine realism based on income if provided
-  if (arsinkomst) {
-    const monthlyIncome = arsinkomst / 12;
-    savingsOptions[0].realistic = savingsOptions[0].amount < monthlyIncome * 0.3;
-    savingsOptions[1].realistic = savingsOptions[1].amount < monthlyIncome * 0.25;
-    savingsOptions[2].realistic = savingsOptions[2].amount < monthlyIncome * 0.2;
-  }
 
   return (
     <div className="space-y-6">
@@ -282,7 +294,7 @@ export default function OneTimeCostsEnhanced({
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>(när intervall kommer)</span>
+                  <span>(när renoveringsbehovet uppstår)</span>
                 </li>
               </ul>
               <div className="mt-4 pt-3 border-t border-orange-200 dark:border-orange-700">
