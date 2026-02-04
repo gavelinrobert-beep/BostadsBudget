@@ -60,6 +60,19 @@ export const generatePDF = async (
   
   let yPos = 40;
   
+  // Housing type section
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  const housingTypeLabels: Record<string, { label: string; emoji: string }> = {
+    'bostadsratt': { label: 'Bostadsrätt', emoji: '🏢' },
+    'villa': { label: 'Villa', emoji: '🏠' },
+    'radhus': { label: 'Radhus/Parhus', emoji: '🏘️' },
+    'nyproduktion': { label: 'Nyproduktion', emoji: '🏗️' },
+  };
+  const housingInfo = housingTypeLabels[input.bostadstyp] || housingTypeLabels['bostadsratt'];
+  doc.text(`Typ av bostad: ${housingInfo.label}`, 15, yPos);
+  yPos += 10;
+  
   // Input values table
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
@@ -72,6 +85,7 @@ export const generatePDF = async (
   const inputData = [
     ['Bostadspris', `${formatNumber(input.bostadspris)} kr`],
     ['Kontantinsats', `${formatNumber(input.kontantinsats)} kr`],
+    ...(input.andelstal ? [['Andelstal/Insats', `${formatNumber(input.andelstal)} kr`]] : []),
     ['Årsinkomst', input.arsinkomst ? `${formatNumber(input.arsinkomst)} kr` : 'Ej angiven'],
     ['Årsränta', `${formatPercent(input.arsranta)}%`],
     ['Driftkostnad', `${formatNumber(input.driftkostnad)} kr/mån`],
@@ -100,10 +114,20 @@ export const generatePDF = async (
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     
+    // Add type-specific note
+    if (input.bostadstyp === 'bostadsratt') {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Bostadsrätt: Ingen lagfart eller pantbrev behövs', 20, yPos);
+      yPos += 6;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+    }
+    
     const engangskostnaderData = [
       ['Kontantinsats', `${formatNumber(engangskostnader.kontantinsats)} kr`],
-      ['Lagfart (1.5%)', `${formatNumber(engangskostnader.lagfart)} kr`],
-      ['Pantbrev (2%)', `${formatNumber(engangskostnader.pantbrev)} kr`],
+      ['Lagfart', `${formatNumber(engangskostnader.lagfart)} kr`],
+      ['Pantbrev', `${formatNumber(engangskostnader.pantbrev)} kr`],
       ['Mäklarkostnad', `${formatNumber(engangskostnader.maklarkostnad)} kr`],
       ['Övrigt', `${formatNumber(engangskostnader.ovrigt)} kr`],
     ];

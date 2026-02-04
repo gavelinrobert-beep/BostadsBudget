@@ -1,9 +1,16 @@
 /**
+ * Typ av bostad
+ */
+export type BostadsTyp = 'bostadsratt' | 'villa' | 'radhus' | 'nyproduktion';
+
+/**
  * Interface för bostadsinput data
  */
 export interface BostadsInput {
+  bostadstyp: BostadsTyp; // Typ av bostad
   bostadspris: number; // kr
   kontantinsats: number; // kr
+  andelstal?: number; // kr (optional, för bostadsrätt)
   arsinkomst?: number; // kr (optional)
   arsranta: number; // decimal, t.ex. 0.045 för 4.5%
   driftkostnad: number; // kr/månad
@@ -94,8 +101,9 @@ export function beraknaBostadskostnad(input: BostadsInput): BostadsResultat {
     throw new Error('Renoveringsintervall måste vara större än 0');
   }
 
-  // 1. Lånebelopp = bostadspris - kontantinsats
-  const lanebelopp = input.bostadspris - input.kontantinsats;
+  // 1. Lånebelopp = (bostadspris - andelstal) - kontantinsats (för bostadsrätt)
+  const bostadsprisEfterAndelstal = input.bostadspris - (input.andelstal || 0);
+  const lanebelopp = bostadsprisEfterAndelstal - input.kontantinsats;
 
   // 2. Belåningsgrad = lånebelopp / bostadspris
   const belåningsgrad = lanebelopp / input.bostadspris;
@@ -320,26 +328,46 @@ export function beraknaHyresJamforelse(bostadspris: number, bostadsyta?: number)
 }
 
 /**
- * Beräknar lagfartskostnad (1.5% av köpeskillingen, min 825 kr)
+ * Beräknar lagfartskostnad baserat på bostadstyp
  * 
+ * @param bostadstyp - Typ av bostad
  * @param bostadspris - Bostadspris
  * @returns Lagfartskostnad i kr
  */
-export function beraknaLagfart(bostadspris: number): number {
-  return Math.max(bostadspris * 0.015, 825);
+export function beraknaLagfart(bostadstyp: BostadsTyp, bostadspris: number): number {
+  switch(bostadstyp) {
+    case 'bostadsratt':
+      return 0; // Ingen lagfart för bostadsrätt
+      
+    case 'villa':
+    case 'radhus':
+    case 'nyproduktion':
+      return Math.max(bostadspris * 0.015, 825);
+      
+    default:
+      return 0;
+  }
 }
 
 /**
- * Beräknar pantbrevskostnad (2% av lånebeloppet, max ca 76 000 kr)
+ * Beräknar pantbrevskostnad baserat på bostadstyp
  * 
+ * @param bostadstyp - Typ av bostad
  * @param lanebelopp - Lånebelopp
  * @param pantbrevFinns - Om pantbrev redan finns (då blir kostnaden 0)
  * @returns Pantbrevskostnad i kr
  */
-export function beraknaPantbrev(lanebelopp: number, pantbrevFinns: boolean): number {
+export function beraknaPantbrev(bostadstyp: BostadsTyp, lanebelopp: number, pantbrevFinns: boolean): number {
+  // Bostadsrätter behöver sällan nya pantbrev
+  if (bostadstyp === 'bostadsratt') {
+    return 0;
+  }
+  
   if (pantbrevFinns) {
     return 0;
   }
+  
+  // För villa/radhus/nyproduktion
   return Math.min(lanebelopp * 0.02, 76000);
 }
 
@@ -377,4 +405,115 @@ export function beraknaEngangskostnader(input: BostadsInput): Engangskostnader {
     ovrigt,
     totalt,
   };
+}
+
+/**
+ * Interface för driftkostnadsguide
+ */
+export interface DriftkostnadGuide {
+  label: string;
+  typical: string;
+  description: string;
+}
+
+/**
+ * Hämtar driftkostnadsguidning baserat på bostadstyp
+ * 
+ * @param bostadstyp - Typ av bostad
+ * @returns DriftkostnadGuide objekt
+ */
+export function getDriftkostnadGuide(bostadstyp: BostadsTyp): DriftkostnadGuide {
+  switch(bostadstyp) {
+    case 'bostadsratt':
+      return {
+        label: "Månadsavgift till föreningen",
+        typical: "2 000 - 5 000 kr/mån",
+        description: "Inkluderar ofta värme, vatten, sophämtning, fastighetsskötsel"
+      };
+      
+    case 'villa':
+      return {
+        label: "Hemförsäkring, sophämtning, fastighetsavgift",
+        typical: "1 000 - 2 000 kr/mån",
+        description: "Du står själv för värme, vatten, snöröjning etc"
+      };
+      
+    case 'radhus':
+      return {
+        label: "Föreningsavgift eller egen drift",
+        typical: "1 500 - 3 500 kr/mån",
+        description: "Beroende på om det finns föreningsavgift"
+      };
+      
+    case 'nyproduktion':
+      return {
+        label: "Drift enligt typ (brf eller villa)",
+        typical: "Varierar",
+        description: "Kontrollera med byggherren"
+      };
+  }
+}
+
+/**
+ * Hämtar elkostnadsguidning baserat på bostadstyp
+ * 
+ * @param bostadstyp - Typ av bostad
+ * @returns Elkostnadsguide som sträng
+ */
+export function getElkostnadGuide(bostadstyp: BostadsTyp): string {
+  switch(bostadstyp) {
+    case 'bostadsratt':
+      return "Ofta inkluderat i månadsavgift. Kontrollera vad som ingår!";
+      
+    case 'villa':
+      return "Villa: 800-2000 kr/mån (beroende på uppvärmning)";
+      
+    case 'radhus':
+      return "Radhus: 600-1500 kr/mån";
+      
+    case 'nyproduktion':
+      return "Ofta lägre tack vare bättre isolering: 400-1000 kr/mån";
+  }
+}
+
+/**
+ * Hämtar förklaring för lagfart baserat på bostadstyp
+ * 
+ * @param bostadstyp - Typ av bostad
+ * @returns Förklaringstext
+ */
+export function getLagfartExplanation(bostadstyp: BostadsTyp): string {
+  switch(bostadstyp) {
+    case 'bostadsratt':
+      return "✓ Ingen lagfart behövs för bostadsrätter";
+      
+    case 'villa':
+    case 'radhus':
+    case 'nyproduktion':
+      return "Lagfart beräknas på köpeskillingen (1.5%)";
+      
+    default:
+      return "";
+  }
+}
+
+/**
+ * Hämtar förklaring för pantbrev baserat på bostadstyp
+ * 
+ * @param bostadstyp - Typ av bostad
+ * @returns Förklaringstext
+ */
+export function getPantbrevExplanation(bostadstyp: BostadsTyp): string {
+  switch(bostadstyp) {
+    case 'bostadsratt':
+      return "ℹ️ Bostadsrätter har normalt inte pantbrev";
+      
+    case 'villa':
+    case 'radhus':
+    case 'nyproduktion':
+      return "Om pantbrev saknas måste nya skapas (2% av lånebelopp)";
+      
+    default:
+      return "";
+  }
 }
