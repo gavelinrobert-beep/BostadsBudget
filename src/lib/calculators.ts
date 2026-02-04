@@ -77,6 +77,8 @@ export interface KontantinsatsAlternativ {
   belåningsgrad: number;
   amorteringskrav: number;
   manadskostnad: number;
+  engångskostnaderTotalt: number; // Total one-time costs (lagfart + pantbrev + other)
+  totaltBehovDag1: number; // Total need day 1 (kontantinsats + one-time costs)
 }
 
 /**
@@ -292,6 +294,12 @@ export function beraknaKontantinsatsAlternativ(
     
     const resultat = beraknaBostadskostnad(modifiedInput);
     
+    // Calculate one-time costs for this alternative
+    const lagfart = beraknaLagfart(input.bostadstyp, input.bostadspris);
+    const pantbrev = beraknaPantbrev(input.bostadstyp, resultat.lanebelopp, input.pantbrevFinns);
+    const engångskostnaderTotalt = lagfart + pantbrev + input.maklarkostnad + input.ovrigaEngangskostnader;
+    const totaltBehovDag1 = kontantinsatsBelopp + engångskostnaderTotalt;
+    
     alternativ.push({
       kontantinsatsProcent: p,
       kontantinsatsBelopp,
@@ -299,6 +307,8 @@ export function beraknaKontantinsatsAlternativ(
       belåningsgrad: resultat.belåningsgrad,
       amorteringskrav: resultat.amorteringsprocent,
       manadskostnad: resultat.totalPerManad,
+      engångskostnaderTotalt,
+      totaltBehovDag1,
     });
   }
   
