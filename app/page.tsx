@@ -10,8 +10,13 @@ import {
   beraknaLagfart,
   beraknaPantbrev,
   beraknaEngangskostnader,
+  getDriftkostnadGuide,
+  getElkostnadGuide,
+  getLagfartExplanation,
+  getPantbrevExplanation,
   BostadsInput, 
   BostadsResultat,
+  BostadsTyp,
   KanslighetsAnalys,
   LangsiktigPrognos,
   KontantinsatsAlternativ,
@@ -28,6 +33,7 @@ import { generatePDF } from '@/lib/pdfExport';
 import { ThemeToggle } from './components/ThemeToggle';
 import OneTimeCostsEnhanced from './components/OneTimeCostsEnhanced';
 import FirstYearTotalCost from './components/FirstYearTotalCost';
+import HousingTypeSelector from './components/HousingTypeSelector';
 import CountUp from 'react-countup';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import html2canvas from 'html2canvas';
@@ -35,8 +41,10 @@ import Image from 'next/image';
 
 // Default values for the calculator
 const DEFAULT_INPUT: BostadsInput = {
+  bostadstyp: 'bostadsratt', // Default för förstagångsköpare
   bostadspris: 3000000,
   kontantinsats: 450000,
+  andelstal: 0,
   arsinkomst: 500000,
   arsranta: 0.045,
   driftkostnad: 3000,
@@ -45,8 +53,8 @@ const DEFAULT_INPUT: BostadsInput = {
   renoveringsintervall: 10,
   analysperiod: 10,
   bostadsyta: 75,
-  lagfartskostnad: 45000, // 1.5% av 3000000
-  pantbrevskostnad: 51000, // 2% av 2550000
+  lagfartskostnad: 0, // 0 för bostadsrätt
+  pantbrevskostnad: 0, // 0 för bostadsrätt
   pantbrevFinns: false,
   maklarkostnad: 0,
   ovrigaEngangskostnader: 0,
@@ -87,9 +95,10 @@ export default function Home() {
 
   // Auto-calculate lagfart and pantbrev when relevant fields change
   useEffect(() => {
-    const lagfart = beraknaLagfart(input.bostadspris);
-    const lanebelopp = input.bostadspris - input.kontantinsats;
-    const pantbrev = beraknaPantbrev(lanebelopp, input.pantbrevFinns);
+    const lagfart = beraknaLagfart(input.bostadstyp, input.bostadspris);
+    const bostadsprisEfterAndelstal = input.bostadspris - (input.andelstal || 0);
+    const lanebelopp = bostadsprisEfterAndelstal - input.kontantinsats;
+    const pantbrev = beraknaPantbrev(input.bostadstyp, lanebelopp, input.pantbrevFinns);
     
     // Only update if values actually changed to avoid infinite loop
     if (input.lagfartskostnad !== lagfart || input.pantbrevskostnad !== pantbrev) {
@@ -99,7 +108,7 @@ export default function Home() {
         pantbrevskostnad: pantbrev,
       }));
     }
-  }, [input.bostadspris, input.kontantinsats, input.pantbrevFinns, input.lagfartskostnad, input.pantbrevskostnad]);
+  }, [input.bostadstyp, input.bostadspris, input.kontantinsats, input.andelstal, input.pantbrevFinns, input.lagfartskostnad, input.pantbrevskostnad]);
 
   // Load saved scenarios on mount
   useEffect(() => {
@@ -603,6 +612,12 @@ export default function Home() {
 
         {/* Form */}
         <form onSubmit={handleBerakna} className="space-y-8 mb-8">
+          {/* Section: Typ av bostad - FIRST SECTION */}
+          <HousingTypeSelector 
+            selectedType={input.bostadstyp}
+            onChange={(type) => setInput({ ...input, bostadstyp: type })}
+          />
+
           {/* Section: Bostad & Lån */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
             <div className="mb-8 pb-6 border-b-2 border-blue-200 dark:border-blue-800">
@@ -697,6 +712,25 @@ export default function Home() {
                   inputMode="numeric"
                 />
               </div>
+
+              {/* Andelstal - Only for bostadsrätt */}
+              {input.bostadstyp === 'bostadsratt' && (
+                <div>
+                  <label htmlFor="andelstal" className="block text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-2">
+                    Andelstal / Insats (kr) <span className="text-gray-500 dark:text-gray-400 text-xs normal-case">(valfritt)</span> <span className="text-gray-400 dark:text-gray-500 text-xs cursor-help normal-case" title="Detta är det belopp du betalar till föreningen för din andel. Ingår i totala bostadspriset men ibland specificerat separat.">💡</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="andelstal"
+                    value={input.andelstal || ''}
+                    onChange={(e) => setInput({ ...input, andelstal: e.target.value ? Number(e.target.value) : undefined })}
+                    placeholder="0"
+                    className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
+                    inputMode="numeric"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Om angiven, justeras lånebelopp: (Bostadspris - Andelstal) - Kontantinsats</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -738,7 +772,9 @@ export default function Home() {
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 font-medium">Auto-beräknad</span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatiskt beräknad som 1.5% av köpesumman</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {getLagfartExplanation(input.bostadstyp)}
+                </p>
               </div>
 
               {/* Pantbrevskostnad */}
@@ -773,7 +809,9 @@ export default function Home() {
                     Pantbrev finns redan (sätt kostnad till 0)
                   </label>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatiskt beräknad som 2% av lånebeloppet om nya pantbrev behövs</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {getPantbrevExplanation(input.bostadstyp)}
+                </p>
               </div>
 
               {/* Mäklararvode */}
@@ -838,6 +876,18 @@ export default function Home() {
                   className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
+                {/* Info badge based on housing type */}
+                <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                  <p className="text-xs font-semibold text-green-700 dark:text-green-300 mb-1">
+                    {getDriftkostnadGuide(input.bostadstyp).label}
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    <span className="font-bold">Typiskt: {getDriftkostnadGuide(input.bostadstyp).typical}</span>
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {getDriftkostnadGuide(input.bostadstyp).description}
+                  </p>
+                </div>
               </div>
 
               {/* Elkostnad */}
@@ -854,6 +904,12 @@ export default function Home() {
                   className="w-full py-4 px-5 text-lg font-medium border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                   inputMode="numeric"
                 />
+                {/* Info badge based on housing type */}
+                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    ℹ️ {getElkostnadGuide(input.bostadstyp)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1215,6 +1271,7 @@ export default function Home() {
                   renoveringskostnad={input.renoveringskostnad}
                   arsinkomst={input.arsinkomst}
                   bostadspris={input.bostadspris}
+                  bostadstyp={input.bostadstyp}
                 />
                 
                 {/* First Year Total Cost - New prominent section */}

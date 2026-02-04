@@ -12,7 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import CountUp from 'react-countup';
-import { Engangskostnader } from '@/lib/calculators';
+import { Engangskostnader, BostadsTyp } from '@/lib/calculators';
 
 interface OneTimeCostsEnhancedProps {
   engangskostnader: Engangskostnader;
@@ -21,6 +21,7 @@ interface OneTimeCostsEnhancedProps {
   renoveringskostnad: number;
   arsinkomst?: number;
   bostadspris: number;
+  bostadstyp: BostadsTyp;
 }
 
 const formatNumber = (num: number): string => {
@@ -34,6 +35,7 @@ export default function OneTimeCostsEnhanced({
   renoveringskostnad,
   arsinkomst,
   bostadspris,
+  bostadstyp,
 }: OneTimeCostsEnhancedProps) {
   const [showChecklist, setShowChecklist] = useState(false);
   const [showSavingsCalc, setShowSavingsCalc] = useState(false);
@@ -120,8 +122,49 @@ export default function OneTimeCostsEnhanced({
     { months: 36, amount: savingsNeeded / 36, realistic: true },
   ];
 
+  // Get housing type label
+  const getHousingTypeLabel = (type: BostadsTyp): { label: string; emoji: string } => {
+    switch(type) {
+      case 'bostadsratt':
+        return { label: 'Bostadsrätt', emoji: '🏢' };
+      case 'villa':
+        return { label: 'Villa', emoji: '🏠' };
+      case 'radhus':
+        return { label: 'Radhus/Parhus', emoji: '🏘️' };
+      case 'nyproduktion':
+        return { label: 'Nyproduktion', emoji: '🏗️' };
+    }
+  };
+
+  const housingTypeInfo = getHousingTypeLabel(bostadstyp);
+
   return (
     <div className="space-y-6">
+      {/* Housing type badge */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4 border-2 border-green-300 dark:border-green-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-3xl mr-3">{housingTypeInfo.emoji}</span>
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Vald bostadstyp</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{housingTypeInfo.label}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Bostadspris</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatNumber(bostadspris)} kr</p>
+          </div>
+        </div>
+        {bostadstyp === 'bostadsratt' && (
+          <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
+            <p className="text-sm text-green-700 dark:text-green-300 flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Lägre engångskostnader för bostadsrätt (ingen lagfart/pantbrev)!
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* 1. Comparison: Kontantinsats vs Totalt behov */}
       <div className={`rounded-xl shadow-lg p-6 border-2 transition-all duration-300 ${
         harTillrackligt
