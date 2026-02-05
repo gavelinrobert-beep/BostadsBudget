@@ -1829,13 +1829,19 @@ export default function Home() {
 
                 {/* Enhanced table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[800px]">
                     <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
                       <tr className="border-b-2 border-gray-300 dark:border-gray-600">
                         <th className="text-left py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
                           <div className="flex items-center">
                             <Coins className="w-4 h-4 mr-2" />
                             Kontantinsats
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Lånebelopp
                           </div>
                         </th>
                         <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
@@ -1856,6 +1862,18 @@ export default function Home() {
                             Månadskostnad
                           </div>
                         </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <Receipt className="w-4 h-4 mr-2" />
+                            Engångskostnader
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="flex items-center justify-end">
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Dag 1 Totalt
+                          </div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1871,15 +1889,20 @@ export default function Home() {
                             } ${isSweetSpot ? 'border-l-4 border-l-yellow-500' : ''}`}
                           >
                             <td className="py-3 px-3">
-                              <div className="flex items-center">
-                                {alt.kontantinsatsProcent}% ({formatNumber(alt.kontantinsatsBelopp)} kr)
-                                {isCurrent && <span className="ml-2 text-blue-600 dark:text-blue-400 font-bold">← Nuvarande</span>}
-                                {isSweetSpot && <span className="ml-2 text-yellow-600 dark:text-yellow-400 font-bold">⭐ Sweet spot</span>}
+                              <div className="flex items-center flex-wrap">
+                                <span>{alt.kontantinsatsProcent}%</span>
+                                <br />
+                                <span className="text-xs text-gray-600 dark:text-gray-400">({formatNumber(alt.kontantinsatsBelopp)} kr)</span>
+                                {isCurrent && <span className="ml-2 text-blue-600 dark:text-blue-400 font-bold text-xs">← Nuvarande</span>}
+                                {isSweetSpot && <span className="ml-2 text-yellow-600 dark:text-yellow-400 font-bold text-xs">⭐</span>}
                               </div>
                             </td>
+                            <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatNumber(alt.lanebelopp)} kr</td>
                             <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatPercent(alt.belåningsgrad)}%</td>
                             <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatPercent(alt.amorteringskrav)}%</td>
                             <td className="text-right py-3 px-3 font-semibold text-gray-900 dark:text-gray-100">{formatNumber(alt.manadskostnad)} kr</td>
+                            <td className="text-right py-3 px-3 text-gray-900 dark:text-gray-100">{formatNumber(alt.engångskostnaderTotalt)} kr</td>
+                            <td className="text-right py-3 px-3 font-bold text-green-600 dark:text-green-400">{formatNumber(alt.totaltBehovDag1)} kr</td>
                           </tr>
                         );
                       })}
@@ -1901,6 +1924,158 @@ export default function Home() {
                     <span><strong>Över 70% belåningsgrad:</strong> Kräver 2% amortering per år</span>
                   </p>
                 </div>
+
+                {/* Housing Type Comparison */}
+                {kontantinsatsAlternativ.length > 0 && (
+                  <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-700">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                      <Building className="w-6 h-6 mr-2 text-purple-600 dark:text-purple-400" />
+                      💡 Skillnad mellan bostadstyper
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      För samma bostad (priset {formatNumber(input.bostadspris)} kr) skiljer sig engångskostnaderna kraftigt:
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {(() => {
+                        const alt15 = kontantinsatsAlternativ.find(a => a.kontantinsatsProcent === 15);
+                        if (!alt15) return null;
+                        
+                        // Calculate for bostadsrätt (no lagfart/pantbrev)
+                        const bostadsrattEngangskostnad = input.maklarkostnad + input.ovrigaEngangskostnader;
+                        const bostadsrattDag1 = alt15.kontantinsatsBelopp + bostadsrattEngangskostnad;
+                        
+                        // Calculate for villa (with lagfart/pantbrev)
+                        const villaLagfart = Math.max(input.bostadspris * 0.015, 825);
+                        const villaPantbrev = input.pantbrevFinns ? 0 : Math.min(alt15.lanebelopp * 0.02, 76000);
+                        const villaEngangskostnad = villaLagfart + villaPantbrev + input.maklarkostnad + input.ovrigaEngangskostnader;
+                        const villaDag1 = alt15.kontantinsatsBelopp + villaEngangskostnad;
+                        
+                        const skillnad = villaDag1 - bostadsrattDag1;
+                        
+                        return (
+                          <>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                              <h4 className="font-bold text-lg mb-2 text-blue-600 dark:text-blue-400">Bostadsrätt</h4>
+                              <div className="space-y-1 text-sm">
+                                <p>Kontantinsats (15%): <strong>{formatNumber(alt15.kontantinsatsBelopp)} kr</strong></p>
+                                <p>Engångskostnader: <strong>{formatNumber(bostadsrattEngangskostnad)} kr</strong></p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 ml-4">✓ Ingen lagfart</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 ml-4">✓ Inga pantbrev</p>
+                                <p className="pt-2 text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  Dag 1 Totalt: {formatNumber(bostadsrattDag1)} kr
+                                </p>
+                              </div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                              <h4 className="font-bold text-lg mb-2 text-green-600 dark:text-green-400">Villa/Radhus</h4>
+                              <div className="space-y-1 text-sm">
+                                <p>Kontantinsats (15%): <strong>{formatNumber(alt15.kontantinsatsBelopp)} kr</strong></p>
+                                <p>Engångskostnader: <strong>{formatNumber(villaEngangskostnad)} kr</strong></p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 ml-4">+ Lagfart: {formatNumber(villaLagfart)} kr</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 ml-4">+ Pantbrev: {formatNumber(villaPantbrev)} kr</p>
+                                <p className="pt-2 text-lg font-bold text-green-600 dark:text-green-400">
+                                  Dag 1 Totalt: {formatNumber(villaDag1)} kr
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    {(() => {
+                      const alt15 = kontantinsatsAlternativ.find(a => a.kontantinsatsProcent === 15);
+                      if (!alt15) return null;
+                      
+                      const bostadsrattEngangskostnad = input.maklarkostnad + input.ovrigaEngangskostnader;
+                      const bostadsrattDag1 = alt15.kontantinsatsBelopp + bostadsrattEngangskostnad;
+                      const villaLagfart = Math.max(input.bostadspris * 0.015, 825);
+                      const villaPantbrev = input.pantbrevFinns ? 0 : Math.min(alt15.lanebelopp * 0.02, 76000);
+                      const villaEngangskostnad = villaLagfart + villaPantbrev + input.maklarkostnad + input.ovrigaEngangskostnader;
+                      const villaDag1 = alt15.kontantinsatsBelopp + villaEngangskostnad;
+                      const skillnad = villaDag1 - bostadsrattDag1;
+                      
+                      return (
+                        <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+                          <p className="font-bold text-gray-900 dark:text-gray-100">
+                            Skillnad: {formatNumber(skillnad)} kr (lagfart + pantbrev)
+                          </p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                            <strong>Men:</strong> Villa ger ofta lägre månadskostnad (ingen föreningsavgift) och större frihet
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Break-even Analysis */}
+                {kontantinsatsAlternativ.length > 0 && input.bostadstyp === 'bostadsratt' && (
+                  <div className="mt-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-lg border-2 border-green-200 dark:border-green-700">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                      <Activity className="w-6 h-6 mr-2 text-green-600 dark:text-green-400" />
+                      📊 Break-even-analys: Bostadsrätt vs Villa
+                    </h3>
+                    {(() => {
+                      const alt15 = kontantinsatsAlternativ.find(a => a.kontantinsatsProcent === 15);
+                      if (!alt15) return null;
+                      
+                      // Bostadsrätt calculations
+                      const bostadsrattEngangskostnad = input.maklarkostnad + input.ovrigaEngangskostnader;
+                      const bostadsrattDag1 = alt15.kontantinsatsBelopp + bostadsrattEngangskostnad;
+                      const bostadsrattManadskostnad = alt15.manadskostnad;
+                      
+                      // Villa calculations
+                      const villaLagfart = Math.max(input.bostadspris * 0.015, 825);
+                      const villaPantbrev = input.pantbrevFinns ? 0 : Math.min(alt15.lanebelopp * 0.02, 76000);
+                      const villaEngangskostnad = villaLagfart + villaPantbrev + input.maklarkostnad + input.ovrigaEngangskostnader;
+                      const villaDag1 = alt15.kontantinsatsBelopp + villaEngangskostnad;
+                      
+                      // Assume villa has lower monthly costs (no association fee, typically ~3000-4000 kr/month)
+                      const typicalAssociationFee = 3500;
+                      const villaManadskostnad = Math.max(bostadsrattManadskostnad - typicalAssociationFee, bostadsrattManadskostnad * 0.85);
+                      
+                      const upfrontDifference = villaDag1 - bostadsrattDag1;
+                      const monthlyDifference = bostadsrattManadskostnad - villaManadskostnad;
+                      
+                      const breakEvenMonths = monthlyDifference > 0 ? Math.ceil(upfrontDifference / monthlyDifference) : null;
+                      
+                      return (
+                        <div className="space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                              <h4 className="font-semibold text-blue-600 dark:text-blue-400 mb-2">Bostadsrätt</h4>
+                              <p className="text-sm">Dag 1: <strong>{formatNumber(bostadsrattDag1)} kr</strong></p>
+                              <p className="text-sm">Per månad: <strong>{formatNumber(bostadsrattManadskostnad)} kr</strong></p>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                              <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2">Villa</h4>
+                              <p className="text-sm">Dag 1: <strong>{formatNumber(villaDag1)} kr</strong></p>
+                              <p className="text-sm">Per månad: <strong>{formatNumber(villaManadskostnad)} kr</strong> (lägre drift)</p>
+                            </div>
+                          </div>
+                          {breakEvenMonths && monthlyDifference > 0 ? (
+                            <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border-l-4 border-green-500">
+                              <p className="font-bold text-green-900 dark:text-green-100 text-lg">
+                                Break-even: Efter {breakEvenMonths} månader ({Math.floor(breakEvenMonths / 12)} år, {breakEvenMonths % 12} månader)
+                              </p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                                Villan kostar {formatNumber(upfrontDifference)} kr mer initialt, men sparar {formatNumber(monthlyDifference)} kr/mån. 
+                                Efter break-even blir villan totalt billigare.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg border-l-4 border-blue-500">
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                <strong>OBS:</strong> I detta scenario har villa inte lägre månadskostnad. Månadskostnaden beror på driftkostnader, 
+                                elkostnader och föreningsavgift. Villa kan ha lägre månadsavgift men högre underhållskostnader.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             )}
 
